@@ -1,0 +1,121 @@
+# ScrollNice
+
+Tiny, portable Windows utility that lets you scroll using **Cursor Zones** (scroll zones).
+Designed for broken mouse wheels and one-hand workflows.
+
+- ✅ Global (works across most apps): browsers, Explorer, IDEs
+- 🪶 Idle ≈ 0 CPU, low RAM (no polling)
+- 🧩 Portable `.exe` + optional installer
+- 🔒 No telemetry, no ads
+
+> Note: Not guaranteed for games / apps with custom raw input. ScrollNice auto-suspends in fullscreen apps by default.
+
+---
+
+## Features
+
+### Core
+- Cursor Zones: **left/right/top/bottom** edges + **floating** zones
+- Scroll modes (per-zone):
+  - **Motion**: move cursor up/down in zone → scroll
+  - **Click-step**: click in zone → scroll by fixed step
+  - **Hold-to-scroll** (optional): hold mouse button → auto scroll
+  - **Wheel-boost** (optional): amplify/smooth physical wheel inside zone
+
+### Control
+- Toggle app + toggle zones via hotkeys
+- Tray icon: enable/disable, edit mode, exit
+- **Wheel Block** (optional): disable physical wheel scrolling
+  - modes: `off`, `global`, `outside_zone_only`, `inside_zone_only`
+  - safety: bypass modifier (hold Alt) + panic key
+
+### Customization (opt-in, OFF by default)
+- Lock zone position
+- Resize zones in Edit Mode
+- Optional themes: zone cover image, click effects, click sounds
+
+---
+
+## Quick Start (User)
+
+### Portable
+1. Download `ScrollNice-portable.zip`
+2. Extract and run `ScrollNice.exe`
+3. Move cursor into the right-edge zone to scroll
+4. Press **Ctrl+Alt+S** to toggle app on/off (panic key)
+
+Config file: `./config.json`
+
+### Installer
+1. Run installer
+2. Optional: enable “Start with Windows”
+3. Config stored in `%APPDATA%\\ScrollNice\\config.json`
+
+---
+
+## Default Hotkeys
+
+- Toggle app: `Ctrl+Alt+S`
+- Toggle Edit Mode: `Ctrl+Alt+E`
+- Toggle next zone: `Ctrl+Alt+Z`
+- Toggle Wheel Block: `Ctrl+Alt+W`
+
+(You can change hotkeys in `config.json`.)
+
+---
+
+## Configuration (config.json)
+
+Example:
+
+```json
+{
+  "version": 1,
+  "enabled": true,
+  "wheel_block_mode": "off",
+  "bypass_modifier": "Alt",
+  "hotkeys": {
+    "toggle_enabled": "Ctrl+Alt+S",
+    "toggle_edit": "Ctrl+Alt+E"
+  },
+  "engine": {
+    "sensitivity": 1.2,
+    "dead_zone_px": 2,
+    "smoothing": 0.85,
+    "accel_power": 1.35,
+    "tick_ms": 10,
+    "max_events_per_sec": 120
+  },
+  "zones": [
+    {
+      "id": "right",
+      "type": "edge",
+      "edge": "right",
+      "width": 10,
+      "height_pct": 100,
+      "mode": "motion",
+      "locked": false
+    },
+    {
+      "id": "bottom_click",
+      "type": "edge",
+      "edge": "bottom",
+      "height": 14,
+      "mode": "click_step",
+      "click_step_lines": 3,
+      "click_repeat_ms": 60,
+      "click_smoothing_ms": 90,
+      "locked": true
+    }
+  ],
+  "exclusions": {
+    "auto_suspend_fullscreen": true,
+    "process_names": ["game.exe", "antiCheat.exe"]
+  },
+  "ui": {
+    "visible": false,
+    "hover_alpha": 0.15,
+    "active_alpha": 0.25,
+    "theme": "default"
+  }
+}
