@@ -1,0 +1,10 @@
+^E:\GAME\SCROLLNICE\BUILD\CMAKEFILES\669A8A9D3D80D1FBD1A5539B736D2EA0\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SE:/Game/ScrollNice -BE:/Game/ScrollNice/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/Game/ScrollNice/build/ScrollNice.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
