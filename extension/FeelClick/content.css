@@ -1,0 +1,213 @@
+/* ═══════════════════════════════════════════════════════
+   ScrollNice — Zone Styling (Premium Glassmorphism)
+   ═══════════════════════════════════════════════════════ */
+
+#scrollnice-zone {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: 130px;
+    height: 190px;
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.18), rgba(155, 89, 182, 0.12));
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    border-radius: 18px;
+    z-index: 2147483647;
+    cursor: move;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    text-align: center;
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+#scrollnice-zone:hover {
+    box-shadow:
+        0 12px 40px rgba(52, 152, 219, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+#scrollnice-zone:active {
+    transform: scale(0.98);
+}
+
+#scrollnice-zone.locked {
+    border-color: rgba(231, 76, 60, 0.5);
+    cursor: default;
+}
+
+#scrollnice-zone.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ── Cover Image ── */
+#scrollnice-zone.has-cover {
+    background-size: cover;
+    background-position: center;
+}
+
+/* ── Split Line ── */
+#scrollnice-zone .split-line {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+}
+
+#scrollnice-zone .split-line.horizontal {
+    left: 10%;
+    right: 10%;
+    top: 50%;
+    height: 1px;
+    transform: translateY(-50%);
+}
+
+#scrollnice-zone .split-line.vertical {
+    top: 10%;
+    bottom: 10%;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+}
+
+/* ── Half Labels ── */
+#scrollnice-zone .half-label {
+    position: absolute;
+    font-size: 18px;
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+#scrollnice-zone .half-label.top-half { top: 20%; }
+#scrollnice-zone .half-label.bottom-half { bottom: 20%; }
+#scrollnice-zone .half-label.left-half { left: 20%; }
+#scrollnice-zone .half-label.right-half { right: 20%; }
+
+#scrollnice-zone .half-label:hover {
+    opacity: 0.9;
+}
+
+/* ── Mode Label ── */
+#scrollnice-zone .mode-indicator {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 600;
+    font-size: 10px;
+    opacity: 0.5;
+    pointer-events: none;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* ── Lock Button ── */
+#scrollnice-zone .lock-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px;
+    transition: background 0.2s;
+    z-index: 10;
+}
+
+#scrollnice-zone .lock-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Resize Handle ── */
+#scrollnice-zone .resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    z-index: 10;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+#scrollnice-zone .resize-handle::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid rgba(255, 255, 255, 0.6);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+#scrollnice-zone .resize-handle:hover {
+    opacity: 1;
+}
+
+/* ── Click Ripple ── */
+#scrollnice-zone .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    animation: scrollnice-ripple 0.4s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes scrollnice-ripple {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0.6;
+    }
+    100% {
+        width: 80px;
+        height: 80px;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* ── Scroll Direction Arrow Animation ── */
+#scrollnice-zone .scroll-arrow {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    opacity: 0;
+    pointer-events: none;
+    animation: scrollnice-arrow 0.5s ease-out forwards;
+}
+
+#scrollnice-zone .scroll-arrow.up {
+    top: 10%;
+}
+
+#scrollnice-zone .scroll-arrow.down {
+    bottom: 10%;
+}
+
+@keyframes scrollnice-arrow {
+    0% { opacity: 0.8; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-15px); }
+}

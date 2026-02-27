@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrollNice — Settings</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🖱️ ScrollNice Settings</h1>
+            <p class="subtitle">Configure your scrolling experience</p>
+        </header>
+
+        <div class="card-grid">
+            <!-- General -->
+            <div class="card">
+                <h2>⚡ General</h2>
+                <div class="field">
+                    <label>Enable Extension</label>
+                    <label class="switch"><input type="checkbox" id="opt-enabled" checked><span
+                            class="track"></span></label>
+                </div>
+            </div>
+
+            <!-- Scroll Mode -->
+            <div class="card">
+                <h2>🎯 Scroll Mode</h2>
+                <div class="mode-list">
+                    <label class="mode-item"><input type="radio" name="opt-mode" value="1" checked>
+                        <div class="mode-info"><strong>Click L↑ R↓</strong><span>Left click = up, Right click =
+                                down</span></div>
+                    </label>
+                    <label class="mode-item"><input type="radio" name="opt-mode" value="2">
+                        <div class="mode-info"><strong>Click L↓ R↑</strong><span>Left click = down, Right click =
+                                up</span></div>
+                    </label>
+                    <label class="mode-item"><input type="radio" name="opt-mode" value="3">
+                        <div class="mode-info"><strong>Split Left/Right</strong><span>Click left half = up, right half =
+                                down</span></div>
+                    </label>
+                    <label class="mode-item"><input type="radio" name="opt-mode" value="4">
+                        <div class="mode-info"><strong>Split Top/Bottom</strong><span>Click top half = up, bottom half =
+                                down</span></div>
+                    </label>
+                    <label class="mode-item"><input type="radio" name="opt-mode" value="5">
+                        <div class="mode-info"><strong>Continuous (Hold)</strong><span>Hold left = scroll up, hold right
+                                = scroll down</span></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Sensitivity -->
+            <div class="card">
+                <h2>📏 Sensitivity</h2>
+                <div class="field">
+                    <label>Scroll Amount</label>
+                    <div class="range-group">
+                        <input type="range" id="opt-amount" min="50" max="800" value="300" step="10">
+                        <span id="opt-amount-val">300px</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone -->
+            <div class="card">
+                <h2>📐 Zone</h2>
+                <div class="field">
+                    <label>Width</label>
+                    <input type="number" id="opt-width" value="130" min="60" max="500">
+                </div>
+                <div class="field">
+                    <label>Height</label>
+                    <input type="number" id="opt-height" value="190" min="60" max="500">
+                </div>
+                <div class="field">
+                    <label>Lock Position</label>
+                    <label class="switch"><input type="checkbox" id="opt-locked"><span class="track"></span></label>
+                </div>
+            </div>
+
+            <!-- Sound -->
+            <div class="card">
+                <h2>🔊 Sound</h2>
+                <div class="field">
+                    <label>Click Sound</label>
+                    <label class="switch"><input type="checkbox" id="opt-sound" checked><span
+                            class="track"></span></label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card actions-card">
+                <button id="opt-reset" class="btn-secondary">Reset All to Defaults</button>
+                <button id="opt-save" class="btn-primary">Save Settings</button>
+            </div>
+        </div>
+
+        <div class="status" id="status-msg"></div>
+    </div>
+    <script src="options.js"></script>
+</body>
+
+</html>

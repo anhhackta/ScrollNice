@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScrollNice</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup">
+    <div class="header">
+      <div class="logo">🖱️</div>
+      <h1>ScrollNice</h1>
+      <span class="version">v1.0</span>
+    </div>
+
+    <div class="section">
+      <div class="toggle-row">
+        <label for="enable-ext">Enable</label>
+        <label class="switch">
+          <input type="checkbox" id="enable-ext" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Scroll Mode</h2>
+      <div class="mode-grid">
+        <label class="mode-card" data-mode="1">
+          <input type="radio" name="mode" value="1" checked>
+          <div class="mode-icon">L↑ R↓</div>
+          <div class="mode-name">Click LR</div>
+        </label>
+        <label class="mode-card" data-mode="2">
+          <input type="radio" name="mode" value="2">
+          <div class="mode-icon">L↓ R↑</div>
+          <div class="mode-name">Click RL</div>
+        </label>
+        <label class="mode-card" data-mode="3">
+          <input type="radio" name="mode" value="3">
+          <div class="mode-icon">◀▶</div>
+          <div class="mode-name">Split L/R</div>
+        </label>
+        <label class="mode-card" data-mode="4">
+          <input type="radio" name="mode" value="4">
+          <div class="mode-icon">▲▼</div>
+          <div class="mode-name">Split T/B</div>
+        </label>
+        <label class="mode-card wide" data-mode="5">
+          <input type="radio" name="mode" value="5">
+          <div class="mode-icon">⟳</div>
+          <div class="mode-name">Hold</div>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Sensitivity</h2>
+      <div class="slider-row">
+        <input type="range" id="scroll-amount" min="50" max="800" value="300" step="10">
+        <span id="scroll-amount-val" class="slider-val">300px</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="toggle-row">
+        <label for="sound-toggle">Click Sound</label>
+        <label class="switch">
+          <input type="checkbox" id="sound-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="reset-position" class="btn-secondary">Reset Position</button>
+      <button id="open-options" class="btn-primary">All Settings</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
