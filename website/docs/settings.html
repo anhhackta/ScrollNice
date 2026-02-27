@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — ScrollNice</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="docs-layout">
+            <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html">Installation</a><a
+                    href="quickstart.html">Quick Start</a><a href="modes.html">Scroll Modes</a><a href="settings.html"
+                    class="active">Settings</a><a href="troubleshoot.html">Troubleshooting</a><a
+                    href="privacy.html">Privacy</a></aside>
+            <main class="docs-content">
+                <h1>Settings Reference</h1>
+
+                <h2>General</h2>
+                <table>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>Enabled</td>
+                        <td>true</td>
+                        <td>Master on/off toggle</td>
+                    </tr>
+                    <tr>
+                        <td>Start with Windows</td>
+                        <td>false</td>
+                        <td>Auto-launch on login (registry key)</td>
+                    </tr>
+                    <tr>
+                        <td>Block Mouse Wheel</td>
+                        <td>false</td>
+                        <td>Block physical wheel scroll events (Alt to bypass)</td>
+                    </tr>
+                </table>
+
+                <h2>Scroll</h2>
+                <table>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>Mode</td>
+                        <td>Click L↑ R↓</td>
+                        <td>See <a href="modes.html">Scroll Modes</a></td>
+                    </tr>
+                    <tr>
+                        <td>Scroll Amount</td>
+                        <td>300 px</td>
+                        <td>Distance per click (sensitivity). Range: 50–800px</td>
+                    </tr>
+                    <tr>
+                        <td>Continuous Speed</td>
+                        <td>10</td>
+                        <td>Base speed for continuous mode (px/tick)</td>
+                    </tr>
+                    <tr>
+                        <td>Continuous Acceleration</td>
+                        <td>2</td>
+                        <td>Speed increase per second held</td>
+                    </tr>
+                </table>
+
+                <h2>Zone</h2>
+                <table>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>Width × Height</td>
+                        <td>120 × 180 px</td>
+                        <td>Zone dimensions (min 60px each)</td>
+                    </tr>
+                    <tr>
+                        <td>Opacity</td>
+                        <td>25%</td>
+                        <td>Transparency level (5–100%)</td>
+                    </tr>
+                    <tr>
+                        <td>Color</td>
+                        <td>#3498db</td>
+                        <td>Background color (Windows app only)</td>
+                    </tr>
+                    <tr>
+                        <td>Cover Image</td>
+                        <td>none</td>
+                        <td>Custom background image for the zone</td>
+                    </tr>
+                    <tr>
+                        <td>Lock Position</td>
+                        <td>false</td>
+                        <td>Prevent dragging the zone</td>
+                    </tr>
+                </table>
+
+                <h2>Sound</h2>
+                <table>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>Click Sound</td>
+                        <td>enabled</td>
+                        <td>Play sound on each click in zone</td>
+                    </tr>
+                    <tr>
+                        <td>Sound File</td>
+                        <td>built-in</td>
+                        <td>Custom WAV file path (Windows app only)</td>
+                    </tr>
+                </table>
+
+                <h2>Hotkeys (Windows App)</h2>
+                <table>
+                    <tr>
+                        <th>Action</th>
+                        <th>Default</th>
+                    </tr>
+                    <tr>
+                        <td>Toggle On/Off</td>
+                        <td><code>Ctrl+Alt+S</code></td>
+                    </tr>
+                    <tr>
+                        <td>Toggle Edit Mode</td>
+                        <td><code>Ctrl+Alt+E</code></td>
+                    </tr>
+                    <tr>
+                        <td>Toggle Wheel Block</td>
+                        <td><code>Ctrl+Alt+W</code></td>
+                    </tr>
+                </table>
+
+                <h2>Config File (Windows)</h2>
+                <p>All settings are stored in <code>config.json</code> next to the exe. You can edit this file directly
+                    with any text editor. Changes take effect on restart.</p>
+                <pre><code>{
+  "version": 1,
+  "enabled": true,
+  "start_with_windows": false,
+  "wheel_block": false,
+  "zone": { "x": 100, "y": 100, "width": 120, "height": 180, "opacity": 0.25 },
+  "scroll": { "mode": "click_lr", "scroll_amount": 300 },
+  "sound": { "enabled": true },
+  "hotkeys": { "toggle_enabled": "Ctrl+Alt+S" }
+}</code></pre>
+            </main>
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
+        </div>
+    </footer>
+</body>
+
+</html>

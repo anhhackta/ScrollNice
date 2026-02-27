@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy — ScrollNice</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="docs-layout">
+            <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html">Installation</a><a
+                    href="quickstart.html">Quick Start</a><a href="modes.html">Scroll Modes</a><a
+                    href="settings.html">Settings</a><a href="troubleshoot.html">Troubleshooting</a><a
+                    href="privacy.html" class="active">Privacy</a></aside>
+            <main class="docs-content">
+                <h1>Privacy Policy</h1>
+                <p>ScrollNice is designed with privacy as a core principle.</p>
+
+                <h2>No Telemetry</h2>
+                <p>ScrollNice collects <strong>zero data</strong>. No analytics, no tracking, no usage statistics, no
+                    crash reports sent anywhere.</p>
+
+                <h2>No Network Access</h2>
+                <p>The Windows app makes <strong>no network connections</strong> at all. It doesn't phone home, check
+                    for updates, or download anything.</p>
+
+                <h2>Local Storage Only</h2>
+                <p>All settings are stored locally:</p>
+                <ul>
+                    <li><strong>Windows</strong>: <code>config.json</code> next to the exe</li>
+                    <li><strong>Extension</strong>: <code>chrome.storage.local</code> (browser-managed)</li>
+                </ul>
+
+                <h2>Mouse Hook Transparency</h2>
+                <p>ScrollNice uses a <code>WH_MOUSE_LL</code> low-level mouse hook (Windows) to detect when your cursor
+                    enters the zone and to optionally block wheel events. This is a standard Windows API used by many
+                    utilities. The hook:</p>
+                <ul>
+                    <li>Does NOT log mouse activity</li>
+                    <li>Does NOT record clicks or positions</li>
+                    <li>Does NOT inject into other processes</li>
+                    <li>Only processes mouse move and wheel events</li>
+                </ul>
+
+                <h2>Open Source</h2>
+                <p>The complete source code is available on <a
+                        href="https://github.com/anhhackta/ScrollNice">GitHub</a>. You can audit every line.</p>
+            </main>
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
+        </div>
+    </footer>
+</body>
+
+</html>

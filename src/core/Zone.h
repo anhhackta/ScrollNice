@@ -1,38 +1,35 @@
 #pragma once
 #include "Config.h"
 #include <windows.h>
-#include <vector>
 
 namespace sn {
 
-// Runtime zone data — computed from config + monitor geometry
-struct Zone {
-    ZoneConfig cfg;
-    RECT       rect = {};     // screen coords
-    bool       enabled = true;
+// Which half of the zone was clicked
+enum class ZoneHalf {
+    None,
+    Top, Bottom,
+    Left, Right
 };
 
 class ZoneManager {
 public:
-    void LoadFromConfig(const std::vector<ZoneConfig>& zones);
-    void RecalcRects();              // recalc based on current monitors
+    void LoadFromConfig(const ZoneConfig& cfg);
+    void UpdatePosition(int x, int y);
+    void UpdateSize(int w, int h);
 
-    // Returns pointer to zone under pt, or nullptr
-    const Zone* HitTest(POINT pt) const;
-    Zone*       HitTest(POINT pt);
+    RECT GetRect() const;
 
-    // Toggle individual zone
-    void ToggleNextZone();
+    // Is pt inside zone?
+    bool HitTest(POINT pt) const;
 
-    std::vector<Zone>& Zones() { return zones_; }
-    const std::vector<Zone>& Zones() const { return zones_; }
+    // Determine which half of zone the point is in
+    ZoneHalf GetHalf(POINT pt, ScrollMode mode) const;
+
+    const ZoneConfig& Config() const { return cfg_; }
+    ZoneConfig& Config() { return cfg_; }
 
 private:
-    RECT CalcEdgeRect(const ZoneConfig& cfg) const;
-    RECT CalcFloatingRect(const ZoneConfig& cfg) const;
-
-    std::vector<Zone> zones_;
-    int active_toggle_idx_ = 0;
+    ZoneConfig cfg_;
 };
 
 } // namespace sn

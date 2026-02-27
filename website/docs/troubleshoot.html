@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting — ScrollNice</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="docs-layout">
+            <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html">Installation</a><a
+                    href="quickstart.html">Quick Start</a><a href="modes.html">Scroll Modes</a><a
+                    href="settings.html">Settings</a><a href="troubleshoot.html" class="active">Troubleshooting</a><a
+                    href="privacy.html">Privacy</a></aside>
+            <main class="docs-content">
+                <h1>Troubleshooting</h1>
+
+                <h2>Zone not visible</h2>
+                <ul>
+                    <li>Ensure ScrollNice is running (check system tray)</li>
+                    <li>Press <code>Ctrl+Alt+S</code> to toggle on</li>
+                    <li>Check if opacity is too low in Settings</li>
+                </ul>
+
+                <h2>Scrolling doesn't work</h2>
+                <ul>
+                    <li>Make sure you're clicking <strong>inside</strong> the zone</li>
+                    <li>Check that the correct mode is selected</li>
+                    <li>Some apps with custom scroll handling may not respond to <code>SendInput</code> wheel events
+                    </li>
+                </ul>
+
+                <h2>Zone won't move</h2>
+                <ul>
+                    <li>Check if "Lock Position" is enabled → unlock it in Settings</li>
+                    <li>Enter Edit Mode with <code>Ctrl+Alt+E</code></li>
+                </ul>
+
+                <h2>Extension not working on a page</h2>
+                <ul>
+                    <li>Extensions cannot run on <code>chrome://</code> pages or the Chrome Web Store</li>
+                    <li>Try reloading the page after installing</li>
+                    <li>Check that the extension is enabled in <code>chrome://extensions</code></li>
+                </ul>
+
+                <h2>Wheel block is stuck</h2>
+                <ul>
+                    <li><strong>Panic key</strong>: Hold <code>Alt</code> while scrolling to bypass the block</li>
+                    <li>Press <code>Ctrl+Alt+W</code> to toggle wheel block off</li>
+                    <li>Press <code>Ctrl+Alt+S</code> to disable ScrollNice entirely</li>
+                </ul>
+
+                <h2>High CPU usage</h2>
+                <p>ScrollNice should use ≈0% CPU when idle. If you see high usage:</p>
+                <ul>
+                    <li>Ensure you're using the latest version</li>
+                    <li>Check if another app is conflicting with the mouse hook</li>
+                </ul>
+            </main>
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
+        </div>
+    </footer>
+</body>
+
+</html>

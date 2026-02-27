@@ -33,17 +33,18 @@ void WinTray::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         if (LOWORD(lParam) == WM_RBUTTONUP || LOWORD(lParam) == WM_CONTEXTMENU) {
             ShowContextMenu();
         } else if (LOWORD(lParam) == WM_LBUTTONDBLCLK) {
-            if (callback_) callback_(ID_TOGGLE);
+            if (callback_) callback_(ID_SETTINGS);
         }
     }
 }
 
 void WinTray::ShowContextMenu() {
     HMENU hMenu = CreatePopupMenu();
-    AppendMenuW(hMenu, MF_STRING, ID_TOGGLE, enabled_ ? L"Disable" : L"Enable");
-    AppendMenuW(hMenu, MF_STRING, ID_EDIT,   L"Edit Mode");
+    AppendMenuW(hMenu, MF_STRING, ID_TOGGLE,   enabled_ ? L"&Disable" : L"&Enable");
+    AppendMenuW(hMenu, MF_STRING, ID_EDIT,     L"&Edit Mode");
+    AppendMenuW(hMenu, MF_STRING, ID_SETTINGS, L"&Settings...");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenuW(hMenu, MF_STRING, ID_QUIT,   L"Quit");
+    AppendMenuW(hMenu, MF_STRING, ID_QUIT,     L"&Quit");
 
     POINT pt;
     GetCursorPos(&pt);

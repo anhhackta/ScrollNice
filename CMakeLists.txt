@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(ScrollNice VERSION 1.0.0 LANGUAGES CXX)
+project(ScrollNice VERSION 2.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,6 +16,7 @@ set(SOURCES
     src/platform/win/WinOverlay.cpp
     src/platform/win/WinTray.cpp
     src/platform/win/WinHotkeys.cpp
+    src/platform/win/WinSettings.cpp
 )
 
 # Win32 GUI application (no console window)
@@ -33,6 +34,7 @@ target_link_libraries(ScrollNice PRIVATE
     winmm
     comctl32
     dwmapi
+    advapi32
 )
 
 # Definitions
@@ -46,7 +48,6 @@ target_compile_definitions(ScrollNice PRIVATE
 # MSVC specific
 if(MSVC)
     target_compile_options(ScrollNice PRIVATE /W4 /permissive-)
-    # Static runtime for portable deployment
     set_property(TARGET ScrollNice PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()

@@ -1,2 +1,2 @@
-// StateMachine is header-only. This file exists for the build system.
+// StateMachine is header-only.
 #include "StateMachine.h"

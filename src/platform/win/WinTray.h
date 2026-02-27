@@ -8,9 +8,10 @@ namespace sn {
 class WinTray {
 public:
     enum MenuItem {
-        ID_TOGGLE = 1001,
-        ID_EDIT   = 1002,
-        ID_QUIT   = 1003
+        ID_TOGGLE   = 1001,
+        ID_EDIT     = 1002,
+        ID_SETTINGS = 1003,
+        ID_QUIT     = 1004
     };
 
     using MenuCallback = std::function<void(MenuItem)>;
