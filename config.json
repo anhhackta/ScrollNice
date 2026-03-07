@@ -4,20 +4,21 @@
   "start_with_windows": false,
   "wheel_block": false,
   "zone": {
-    "x": 100,
+    "x": 60,
     "y": 100,
     "width": 120,
-    "height": 180,
-    "opacity": 0.25,
+    "height": 200,
+    "opacity": 0.30,
     "color": "#3498db",
     "cover_image": "",
     "locked": false
   },
   "scroll": {
-    "mode": "click_lr",
+    "mode": "click_hold",
     "scroll_amount": 300,
-    "continuous_speed": 10,
-    "continuous_accel": 2
+    "continuous_speed": 8,
+    "continuous_accel": 3,
+    "hover_speed": 6
   },
   "sound": {
     "enabled": true,

@@ -1,80 +1,156 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="vi-en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scroll Modes — ScrollNice</title>
+    <title>Chế độ lăn — ScrollNice Docs</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
+    <script>
+      (function(){
+        const t = localStorage.getItem('sn_theme') || 'dark';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
 </head>
 
 <body>
     <nav class="nav">
-        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
-            <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
+        <div class="container">
+            <a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="../index.html">Trang chủ</a><a href="index.html" style="color:#3498db">Hướng
+                    dẫn</a></div>
         </div>
-    </nav>
+                <!-- Theme Toggle -->
+        <button class="theme-btn" title="Toggle theme">☀️</button>
+
+        <!-- Language Dropdown -->
+        <div class="lang-dropdown">
+            <button class="lang-trigger" aria-haspopup="true">
+                <span class="lang-trigger-flag"></span>
+                <span class="lang-trigger-label">VI</span>
+                <span class="chevron">▾</span>
+            </button>
+            <div class="lang-menu" role="menu">
+                <button class="lang-option active" data-lang="vi" role="menuitem">🇻🇳 <span>Tiếng Việt</span><span class="check">✓</span></button>
+                <button class="lang-option" data-lang="en" role="menuitem"> <span>English</span><span class="check" style="display:none"></span></button>
+            </div>
+        </div>
+</nav>
+
     <div class="container">
         <div class="docs-layout">
-            <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html">Installation</a><a
-                    href="quickstart.html">Quick Start</a><a href="modes.html" class="active">Scroll Modes</a><a
-                    href="settings.html">Settings</a><a href="troubleshoot.html">Troubleshooting</a><a
-                    href="privacy.html">Privacy</a></aside>
+            <aside class="sidebar">
+                <a href="index.html">Tổng quan</a>
+                <a href="install.html">Cài đặt</a>
+                <a href="quickstart.html">Bắt đầu nhanh</a>
+                <a href="modes.html" class="active">Chế độ lăn</a>
+                <a href="settings.html">Cài đặt chi tiết</a>
+                <a href="troubleshoot.html">Xử lý lỗi</a>
+                <a href="privacy.html">Quyền riêng tư</a>
+                <hr style="border-color:rgba(255,255,255,0.08);margin:8px 0;">
+    <a href="../index.html#donation" style="color:#e8917a;" data-i18n="sidebar_support">❤️ Ủng hộ</a>
+</aside>
+
             <main class="docs-content">
-                <h1>Scroll Modes</h1>
-                <p>ScrollNice supports 5 scroll modes. Change modes via Settings dialog (Windows) or the popup/options
-                    page (Extension).</p>
+                <h1>3 Chế Độ Lăn / 3 Scroll Modes</h1>
+                <p>ScrollNice có 3 chế độ lăn. Thay đổi chế độ trong Settings (Windows) hoặc popup/options (Extension).
+                </p>
 
-                <h2>Mode 1: Click L↑ R↓ (Default)</h2>
-                <p>The simplest mode. Uses mouse buttons to determine direction.</p>
-                <ul>
-                    <li><strong>Left click</strong> → scroll up</li>
-                    <li><strong>Right click</strong> → scroll down</li>
-                </ul>
-                <p>Best for: General use, most intuitive for right-handed users.</p>
+                <h2>Mode 1: Click / Giữ (Click + Hold)</h2>
+                <p><strong>Đây là chế độ mặc định</strong>, đơn giản nhất.</p>
+                <table>
+                    <tr>
+                        <th>Thao tác</th>
+                        <th>Kết quả</th>
+                    </tr>
+                    <tr>
+                        <td>Click chuột trái</td>
+                        <td>↑ Lăn lên (1 bước)</td>
+                    </tr>
+                    <tr>
+                        <td>Click chuột phải</td>
+                        <td>↓ Lăn xuống (1 bước)</td>
+                    </tr>
+                    <tr>
+                        <td>Giữ chuột trái (&gt;250ms)</td>
+                        <td>↑ Lăn lên liên tục, tốc độ tăng dần</td>
+                    </tr>
+                    <tr>
+                        <td>Giữ chuột phải (&gt;250ms)</td>
+                        <td>↓ Lăn xuống liên tục, tốc độ tăng dần</td>
+                    </tr>
+                </table>
+                <p>Phù hợp nhất: sử dụng chung, trực quan nhất cho mọi người.</p>
 
-                <h2>Mode 2: Click L↓ R↑ (Reversed)</h2>
-                <p>Same as Mode 1 but reversed.</p>
-                <ul>
-                    <li><strong>Left click</strong> → scroll down</li>
-                    <li><strong>Right click</strong> → scroll up</li>
-                </ul>
+                <h2>Mode 2: Chia Trên/Dưới + Giữ (Split Top/Bottom)</h2>
+                <p>Zone chia làm 2 nửa bằng nhau theo chiều ngang. Có đường kẻ trắng ở giữa để phân biệt.</p>
+                <table>
+                    <tr>
+                        <th>Thao tác</th>
+                        <th>Kết quả</th>
+                    </tr>
+                    <tr>
+                        <td>Click nửa trên</td>
+                        <td>↑ Lăn lên (1 bước)</td>
+                    </tr>
+                    <tr>
+                        <td>Click nửa dưới</td>
+                        <td>↓ Lăn xuống (1 bước)</td>
+                    </tr>
+                    <tr>
+                        <td>Giữ ở nửa trên</td>
+                        <td>↑ Lăn lên liên tục</td>
+                    </tr>
+                    <tr>
+                        <td>Giữ ở nửa dưới</td>
+                        <td>↓ Lăn xuống liên tục</td>
+                    </tr>
+                </table>
+                <p>Phù hợp nhất: người dùng chỉ có một nút chuột hoặc không muốn phân biệt click trái/phải.</p>
 
-                <h2>Mode 3: Split Left/Right</h2>
-                <p>The zone is split into two vertical halves. A visual line divides them.</p>
-                <ul>
-                    <li><strong>Click left half</strong> → scroll up</li>
-                    <li><strong>Click right half</strong> → scroll down</li>
-                </ul>
-                <p>Best for: Users who prefer single-button clicking without right-click.</p>
+                <h2>Mode 3: Di Chuột Tự Động (Hover Auto-Scroll)</h2>
+                <p><strong>Đặc biệt nhất!</strong> Hoàn toàn không cần click — chỉ cần di chuột vào zone là tự động lăn.
+                </p>
+                <table>
+                    <tr>
+                        <th>Thao tác</th>
+                        <th>Kết quả</th>
+                    </tr>
+                    <tr>
+                        <td>Di chuột vào nửa trên zone</td>
+                        <td>↑ Tự động lăn lên liên tục</td>
+                    </tr>
+                    <tr>
+                        <td>Di chuột vào nửa dưới zone</td>
+                        <td>↓ Tự động lăn xuống liên tục</td>
+                    </tr>
+                    <tr>
+                        <td>Di chuột ra khỏi zone</td>
+                        <td>Dừng lăn</td>
+                    </tr>
+                </table>
+                <p>Zone hiển thị 2 vùng màu: <span style="color:#4a90d9">xanh (lăn lên)</span> và <span
+                        style="color:#e05050">đỏ (lăn xuống)</span>.</p>
+                <p>Phù hợp nhất: đọc tài liệu dài, không muốn click, trải nghiệm hands-free.</p>
 
-                <h2>Mode 4: Split Top/Bottom</h2>
-                <p>The zone is split into two horizontal halves. A visual line divides them.</p>
-                <ul>
-                    <li><strong>Click top half</strong> → scroll up</li>
-                    <li><strong>Click bottom half</strong> → scroll down</li>
-                </ul>
-                <p>Best for: Tall zones positioned on the side of the screen.</p>
-
-                <h2>Mode 5: Continuous Hold</h2>
-                <p>Hold the mouse button to scroll continuously. Speed increases the longer you hold.</p>
-                <ul>
-                    <li><strong>Hold left click</strong> → scroll up gradually (accelerating)</li>
-                    <li><strong>Hold right click</strong> → scroll down gradually (accelerating)</li>
-                </ul>
-                <p>Best for: Long documents, reading mode.</p>
-
-                <h2>Sensitivity</h2>
-                <p>The <strong>Scroll Amount</strong> setting controls how far each click scrolls (in pixels). Default
-                    is 300px. Increase for faster scrolling, decrease for finer control.</p>
+                <h2>Độ nhạy / Sensitivity</h2>
+                <p>Cài đặt <strong>Scroll Amount</strong> kiểm soát số pixel lăn mỗi lần click. Mặc định 300px. Tăng để
+                    lăn nhanh hơn, giảm để lăn chính xác hơn.</p>
+                <p>Cài đặt <strong>Continuous Speed</strong> và <strong>Hover Speed</strong> kiểm soát tốc độ khi giữ
+                    hoặc hover.</p>
             </main>
         </div>
     </div>
+
     <footer class="footer">
         <div class="container">
-            <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
+            <p>ScrollNice Docs | <a href="../index.html">Trang chủ</a> | <a
+                    href="https://github.com/anhhackta/ScrollNice">GitHub</a></p>
         </div>
     </footer>
+<script src="../js/docs-i18n.js"></script>
 </body>
 
 </html>

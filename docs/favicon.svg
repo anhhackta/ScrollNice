@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Mouse body -->
+  <rect x="8" y="4" width="16" height="22" rx="8" fill="url(#g)"/>
+  <!-- Scroll wheel -->
+  <rect x="14" y="9" width="4" height="8" rx="2" fill="white" opacity="0.9"/>
+  <!-- Highlight -->
+  <rect x="13" y="5" width="3" height="5" rx="1.5" fill="white" opacity="0.25"/>
+</svg>

@@ -40,9 +40,7 @@ bool WinOverlay::Create(HINSTANCE hInst, const ZoneConfig& cfg, ZoneEventCallbac
     );
     if (!hwnd_) return false;
 
-    // Set opacity
     SetOpacity(cfg_.opacity);
-
     ShowWindow(hwnd_, SW_SHOWNOACTIVATE);
     return true;
 }
@@ -53,7 +51,7 @@ void WinOverlay::Destroy() {
     g_zoneWnd = nullptr;
 }
 
-// ─────── Public setters ───────
+// ─────── Setters ───────
 void WinOverlay::SetPosition(int x, int y) {
     cfg_.x = x; cfg_.y = y;
     if (hwnd_) SetWindowPos(hwnd_, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -73,7 +71,7 @@ void WinOverlay::SetOpacity(double alpha) {
     cfg_.opacity = alpha;
     if (hwnd_) {
         BYTE a = (BYTE)(alpha * 255);
-        if (a < 20) a = 20; // min visibility
+        if (a < 20) a = 20;
         SetLayeredWindowAttributes(hwnd_, 0, a, LWA_ALPHA);
     }
 }
@@ -94,10 +92,7 @@ void WinOverlay::SetCoverImage(const std::string& path) {
     Redraw();
 }
 
-void WinOverlay::Redraw() {
-    if (hwnd_) InvalidateRect(hwnd_, nullptr, TRUE);
-}
-
+void WinOverlay::Redraw() { if (hwnd_) InvalidateRect(hwnd_, nullptr, TRUE); }
 void WinOverlay::Show() { if (hwnd_) ShowWindow(hwnd_, SW_SHOWNOACTIVATE); }
 void WinOverlay::Hide() { if (hwnd_) ShowWindow(hwnd_, SW_HIDE); }
 
@@ -107,11 +102,10 @@ void WinOverlay::Paint(HDC hdc) {
     GetClientRect(hwnd_, &rc);
     int w = rc.right, h = rc.bottom;
 
-    // Background
+    // Background color
     COLORREF bgColor = HexToColorRef(cfg_.color);
-    if (editMode_) bgColor = RGB(255, 180, 0); // orange in edit mode
+    if (editMode_) bgColor = RGB(255, 140, 0);
 
-    // Draw cover image if available
     if (coverBmp_) {
         HDC memDC = CreateCompatibleDC(hdc);
         HBITMAP oldBmp = (HBITMAP)SelectObject(memDC, coverBmp_);
@@ -124,35 +118,37 @@ void WinOverlay::Paint(HDC hdc) {
         DeleteObject(brush);
     }
 
-    // Border
-    COLORREF borderColor = editMode_ ? RGB(255, 120, 0) : RGB(255, 255, 255);
-    HPEN pen = CreatePen(PS_SOLID, editMode_ ? 3 : 2, borderColor);
+    // Mode-specific visuals
+    DrawModeVisuals(hdc);
+
+    // Border (rounded)
+    COLORREF borderColor = editMode_ ? RGB(255, 100, 0) : RGB(255, 255, 255);
+    int borderW = editMode_ ? 3 : 2;
+    HPEN pen = CreatePen(PS_SOLID, borderW, borderColor);
     HPEN oldPen = (HPEN)SelectObject(hdc, pen);
     HBRUSH nullBrush = (HBRUSH)GetStockObject(NULL_BRUSH);
     HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, nullBrush);
-
-    // Rounded rectangle border
     RoundRect(hdc, 0, 0, w, h, 16, 16);
-
     SelectObject(hdc, oldPen);
     SelectObject(hdc, oldBrush);
     DeleteObject(pen);
 
-    // Draw split line
-    DrawSplitLine(hdc);
-
-    // Draw mode label
-    DrawModeLabel(hdc);
-
-    // Draw lock indicator
-    if (cfg_.locked) {
+    // Lock indicator
+    if (cfg_.locked && !editMode_) {
         SetBkMode(hdc, TRANSPARENT);
         SetTextColor(hdc, RGB(255, 255, 255));
-        RECT lockRect = {w - 22, 2, w - 2, 18};
-        DrawTextW(hdc, L"\U0001F512", -1, &lockRect, DT_CENTER | DT_VCENTER);
+        RECT lockR = {w - 22, 2, w - 2, 20};
+        // Draw a simple lock icon via text
+        HFONT fnt = CreateFontW(13, 0, 0, 0, FW_BOLD, 0, 0, 0,
+                                DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+        HFONT old = (HFONT)SelectObject(hdc, fnt);
+        DrawTextW(hdc, L"\uD83D\uDD12", -1, &lockR, DT_VCENTER | DT_SINGLELINE);
+        SelectObject(hdc, old);
+        DeleteObject(fnt);
     }
 
-    // Resize handle in edit mode
+    // Edit mode: resize grip (bottom-right corner)
     if (editMode_) {
         RECT grip = {w - 14, h - 14, w, h};
         HBRUSH gripBrush = CreateSolidBrush(RGB(255, 255, 255));
@@ -161,83 +157,110 @@ void WinOverlay::Paint(HDC hdc) {
     }
 }
 
-void WinOverlay::DrawSplitLine(HDC hdc) {
+void WinOverlay::DrawModeVisuals(HDC hdc) {
     RECT rc;
     GetClientRect(hwnd_, &rc);
     int w = rc.right, h = rc.bottom;
 
-    HPEN dashPen = CreatePen(PS_DASH, 1, RGB(255, 255, 255));
-    HPEN oldPen = (HPEN)SelectObject(hdc, dashPen);
+    SetBkMode(hdc, TRANSPARENT);
 
-    if (mode_ == ScrollMode::SplitTB) {
-        MoveToEx(hdc, 4, h / 2, nullptr);
-        LineTo(hdc, w - 4, h / 2);
-
-        // Draw arrows
-        SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, RGB(255, 255, 255));
-        HFONT font = CreateFontW(16, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
-                                  DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                                  CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
-        HFONT oldFont = (HFONT)SelectObject(hdc, font);
-
-        RECT topR = {0, 4, w, h / 2 - 4};
-        DrawTextW(hdc, L"\u25B2 UP", -1, &topR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-        RECT botR = {0, h / 2 + 4, w, h - 4};
-        DrawTextW(hdc, L"\u25BC DOWN", -1, &botR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-        SelectObject(hdc, oldFont);
-        DeleteObject(font);
-    } else if (mode_ == ScrollMode::SplitLR) {
-        MoveToEx(hdc, w / 2, 4, nullptr);
-        LineTo(hdc, w / 2, h - 4);
-
-        SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, RGB(255, 255, 255));
+    // ── Mode 1 (ClickHold): show L↑ R↓ label ──
+    if (mode_ == ScrollMode::ClickHold) {
         HFONT font = CreateFontW(14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
                                   DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                                   CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
-        HFONT oldFont = (HFONT)SelectObject(hdc, font);
+        HFONT old = (HFONT)SelectObject(hdc, font);
+        SetTextColor(hdc, RGB(255, 255, 255));
 
-        RECT leftR = {0, 0, w / 2 - 2, h};
-        DrawTextW(hdc, L"\u25B2\nUP", -1, &leftR, DT_CENTER | DT_VCENTER | DT_WORDBREAK);
+        // Up arrow in top half
+        RECT topR = {0, h / 4, w, h / 2};
+        DrawTextW(hdc, L"\u25B2", -1, &topR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-        RECT rightR = {w / 2 + 2, 0, w, h};
-        DrawTextW(hdc, L"\u25BC\nDOWN", -1, &rightR, DT_CENTER | DT_VCENTER | DT_WORDBREAK);
+        // Down arrow in bottom half
+        RECT botR = {0, h / 2, w, 3 * h / 4};
+        DrawTextW(hdc, L"\u25BC", -1, &botR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-        SelectObject(hdc, oldFont);
+        // Mode label at bottom
+        HFONT fntSm = CreateFontW(10, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+                                   DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                   CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+        SelectObject(hdc, fntSm);
+        SetTextColor(hdc, COLORREF(0x99FFFFFF & 0x00FFFFFF | (0x88 << 24))); // semi-white
+        SetTextColor(hdc, RGB(200, 200, 200));
+        RECT labelR = {2, h - 18, w - 2, h - 2};
+        DrawTextW(hdc, L"L\u2191  R\u2193", -1, &labelR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        SelectObject(hdc, old);
         DeleteObject(font);
+        DeleteObject(fntSm);
+        return;
     }
 
-    SelectObject(hdc, oldPen);
-    DeleteObject(dashPen);
-}
+    // ── Mode 2 (SplitHold): split line + top/bottom labels ──
+    if (mode_ == ScrollMode::SplitHold) {
+        // Dashed split line at midpoint
+        HPEN dashPen = CreatePen(PS_DASH, 1, RGB(255, 255, 255));
+        HPEN oldPen = (HPEN)SelectObject(hdc, dashPen);
+        MoveToEx(hdc, 8, h / 2, nullptr);
+        LineTo(hdc, w - 8, h / 2);
+        SelectObject(hdc, oldPen);
+        DeleteObject(dashPen);
 
-void WinOverlay::DrawModeLabel(HDC hdc) {
-    RECT rc;
-    GetClientRect(hwnd_, &rc);
+        HFONT font = CreateFontW(16, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+                                  DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                  CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+        HFONT old = (HFONT)SelectObject(hdc, font);
+        SetTextColor(hdc, RGB(255, 255, 255));
 
-    // Skip for split modes (they draw their own labels)
-    if (mode_ == ScrollMode::SplitTB || mode_ == ScrollMode::SplitLR) return;
+        RECT topR = {0, 4, w, h / 2 - 2};
+        DrawTextW(hdc, L"\u25B2 L\u00EAN", -1, &topR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-    SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, RGB(255, 255, 255));
-    HFONT font = CreateFontW(12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-                              DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                              CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
-    HFONT oldFont = (HFONT)SelectObject(hdc, font);
+        RECT botR = {0, h / 2 + 2, w, h - 4};
+        DrawTextW(hdc, L"\u25BC XU\u1ED0NG", -1, &botR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-    const wchar_t* label = L"";
-    if (mode_ == ScrollMode::ClickLR)    label = L"L\u2191 R\u2193";
-    else if (mode_ == ScrollMode::ClickRL) label = L"L\u2193 R\u2191";
-    else if (mode_ == ScrollMode::Continuous) label = L"Hold L\u2191 R\u2193";
+        SelectObject(hdc, old);
+        DeleteObject(font);
+        return;
+    }
 
-    RECT textR = {4, rc.bottom - 20, rc.right - 4, rc.bottom - 2};
-    DrawTextW(hdc, label, -1, &textR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    // ── Mode 3 (HoverAuto): hover indicator ──
+    if (mode_ == ScrollMode::HoverAuto) {
+        // Gradient-like hint: top zone = blue-ish, bottom = red-ish tint
+        HBRUSH topBrush = CreateSolidBrush(RGB(60, 100, 180));
+        RECT topArea = {4, 4, w - 4, h / 2 - 2};
+        HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, topBrush);
+        SelectObject(hdc, oldBrush);
+        FillRect(hdc, &topArea, topBrush);
+        DeleteObject(topBrush);
 
-    SelectObject(hdc, oldFont);
-    DeleteObject(font);
+        HBRUSH botBrush = CreateSolidBrush(RGB(180, 60, 60));
+        RECT botArea = {4, h / 2 + 2, w - 4, h - 4};
+        FillRect(hdc, &botArea, botBrush);
+        DeleteObject(botBrush);
+
+        HFONT font = CreateFontW(14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+                                  DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                  CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+        HFONT old = (HFONT)SelectObject(hdc, font);
+        SetTextColor(hdc, RGB(255, 255, 255));
+
+        RECT topR = {0, 8, w, h / 2 - 4};
+        DrawTextW(hdc, L"\u25B2 DI CHU\u1ED8T", -1, &topR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        RECT botR = {0, h / 2 + 4, w, h - 8};
+        DrawTextW(hdc, L"\u25BC DI CHU\u1ED8T", -1, &botR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        // Dashed divider
+        HPEN dashPen = CreatePen(PS_DASH, 1, RGB(255, 255, 255));
+        HPEN oldPen = (HPEN)SelectObject(hdc, dashPen);
+        MoveToEx(hdc, 8, h / 2, nullptr);
+        LineTo(hdc, w - 8, h / 2);
+        SelectObject(hdc, oldPen);
+        DeleteObject(dashPen);
+
+        SelectObject(hdc, old);
+        DeleteObject(font);
+    }
 }
 
 // ─────── Window Procedure ───────
@@ -259,10 +282,9 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
     case WM_LBUTTONDOWN: {
         POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 
-        // Check resize handle in edit mode
+        // Resize handle check in edit mode
         if (self->editMode_) {
-            RECT rc;
-            GetClientRect(hwnd, &rc);
+            RECT rc; GetClientRect(hwnd, &rc);
             if (pt.x > rc.right - 14 && pt.y > rc.bottom - 14) {
                 self->isResizing_ = true;
                 self->resizeStart_ = pt;
@@ -271,22 +293,20 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             }
         }
 
-        // Dragging (when not locked and in edit mode, or always if unlocked)
-        if (!self->cfg_.locked) {
+        // Edit mode: drag
+        if (!self->cfg_.locked || self->editMode_) {
             self->isDragging_ = true;
             self->dragStart_ = pt;
             GetWindowRect(hwnd, &self->dragStartRect_);
             SetCapture(hwnd);
         }
 
-        // Fire click event
         if (self->callback_ && self->enabled_ && !self->editMode_) {
             ZoneEventData d = {};
             d.event = ZoneEvent::LeftClickDown;
             d.clickPos = pt;
             RECT r; GetClientRect(hwnd, &r);
-            d.zoneWidth = r.right;
-            d.zoneHeight = r.bottom;
+            d.zoneWidth = r.right; d.zoneHeight = r.bottom;
             self->callback_(d);
         }
         return 0;
@@ -303,8 +323,7 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             d.event = ZoneEvent::LeftClickUp;
             d.clickPos = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
             RECT r; GetClientRect(hwnd, &r);
-            d.zoneWidth = r.right;
-            d.zoneHeight = r.bottom;
+            d.zoneWidth = r.right; d.zoneHeight = r.bottom;
             self->callback_(d);
         }
         return 0;
@@ -316,8 +335,7 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             d.event = ZoneEvent::RightClickDown;
             d.clickPos = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
             RECT r; GetClientRect(hwnd, &r);
-            d.zoneWidth = r.right;
-            d.zoneHeight = r.bottom;
+            d.zoneWidth = r.right; d.zoneHeight = r.bottom;
             self->callback_(d);
         }
         return 0;
@@ -329,8 +347,7 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             d.event = ZoneEvent::RightClickUp;
             d.clickPos = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
             RECT r; GetClientRect(hwnd, &r);
-            d.zoneWidth = r.right;
-            d.zoneHeight = r.bottom;
+            d.zoneWidth = r.right; d.zoneHeight = r.bottom;
             self->callback_(d);
         }
         return 0;
@@ -339,43 +356,68 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
     case WM_MOUSEMOVE: {
         POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 
+        // Resize
         if (self->isResizing_) {
             int dw = pt.x - self->resizeStart_.x;
             int dh = pt.y - self->resizeStart_.y;
             RECT wr; GetWindowRect(hwnd, &wr);
-            int nw = (wr.right - wr.left) + dw;
-            int nh = (wr.bottom - wr.top) + dh;
-            if (nw < 60) nw = 60;
-            if (nh < 60) nh = 60;
+            int nw = std::max(60, (wr.right - wr.left) + dw);
+            int nh = std::max(60, (wr.bottom - wr.top) + dh);
             self->resizeStart_ = pt;
-            self->cfg_.width = nw;
-            self->cfg_.height = nh;
+            self->cfg_.width = nw; self->cfg_.height = nh;
             SetWindowPos(hwnd, nullptr, 0, 0, nw, nh, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+            self->Redraw();
         }
+        // Drag
         else if (self->isDragging_) {
             POINT screenPt = pt;
             ClientToScreen(hwnd, &screenPt);
             int nx = screenPt.x - self->dragStart_.x;
             int ny = screenPt.y - self->dragStart_.y;
-            self->cfg_.x = nx;
-            self->cfg_.y = ny;
+            self->cfg_.x = nx; self->cfg_.y = ny;
             SetWindowPos(hwnd, nullptr, nx, ny, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
-        // Change cursor for resize area in edit mode
+        // Cursor styling
         if (self->editMode_) {
             RECT rc; GetClientRect(hwnd, &rc);
             if (pt.x > rc.right - 14 && pt.y > rc.bottom - 14)
                 SetCursor(LoadCursor(nullptr, IDC_SIZENWSE));
             else
-                SetCursor(LoadCursor(nullptr, self->cfg_.locked ? IDC_ARROW : IDC_SIZEALL));
+                SetCursor(LoadCursor(nullptr, IDC_SIZEALL));
+        }
+
+        // Hover event for Mode 3
+        if (self->callback_ && self->enabled_ && !self->editMode_) {
+            // Track mouse leave
+            if (!self->mouseTracking_) {
+                TRACKMOUSEEVENT tme = {sizeof(tme), TME_LEAVE, hwnd, 0};
+                TrackMouseEvent(&tme);
+                self->mouseTracking_ = true;
+            }
+
+            ZoneEventData d = {};
+            d.event = ZoneEvent::HoverMove;
+            d.clickPos = pt;
+            RECT r; GetClientRect(hwnd, &r);
+            d.zoneWidth = r.right; d.zoneHeight = r.bottom;
+            self->callback_(d);
+        }
+        return 0;
+    }
+
+    case WM_MOUSELEAVE: {
+        self->mouseTracking_ = false;
+        if (self->callback_ && self->enabled_ && !self->editMode_) {
+            ZoneEventData d = {};
+            d.event = ZoneEvent::HoverLeave;
+            self->callback_(d);
         }
         return 0;
     }
 
     case WM_CONTEXTMENU:
-        // Prevent default context menu
-        return 0;
+        return 0; // suppress right-click context menu
 
     default:
         return DefWindowProcW(hwnd, msg, wParam, lParam);

@@ -1,59 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="vi-en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Changelog — ScrollNice</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
+    <script>
+      (function(){
+        const t = localStorage.getItem('sn_theme') || 'dark';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
 </head>
 
 <body>
     <nav class="nav">
-        <div class="container"><a href="index.html" class="nav-brand">🖱️ ScrollNice</a>
-            <div class="nav-links"><a href="index.html#features">Features</a><a
-                    href="index.html#download">Download</a><a href="docs/index.html">Docs</a><a href="changelog.html"
-                    style="color:#3498db;">Changelog</a></div>
+        <div class="container">
+            <a href="index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="index.html">Trang chủ</a><a href="docs/index.html">Hướng dẫn</a></div>
         </div>
-    </nav>
-    <div class="container" style="padding-top:100px; padding-bottom:60px; max-width:700px;">
-        <h1 style="font-size:28px; margin-bottom:32px;">Changelog</h1>
+                <!-- Theme Toggle -->
+        <button class="theme-btn" title="Toggle theme">☀️</button>
 
-        <div style="margin-bottom:32px;">
-            <h2 style="font-size:20px; margin-bottom:8px;">v2.0.0 — 2026-02-27</h2>
-            <p style="color:#888; margin-bottom:12px;">Major rewrite: click-to-scroll architecture</p>
-            <ul style="margin-left:20px; color:#aaa;">
-                <li>🆕 Floating zone with click-to-scroll (not edge-based motion)</li>
-                <li>🆕 5 scroll modes: Click LR, Click RL, Split LR, Split TB, Continuous Hold</li>
-                <li>🆕 Settings dialog with all options (mode, sensitivity, zone, sound, hotkeys)</li>
-                <li>🆕 Click sound effects</li>
-                <li>🆕 Cover image support for zone</li>
-                <li>🆕 Zone resize via drag handle (edit mode)</li>
-                <li>🆕 Start with Windows option</li>
-                <li>🆕 Wheel blocking with Alt bypass</li>
-                <li>🆕 Chrome extension upgrade: premium UI, sensitivity slider, resize handles</li>
-                <li>🆕 Full options page for extension</li>
-                <li>🆕 Documentation website</li>
-            </ul>
+        <!-- Language Dropdown -->
+        <div class="lang-dropdown">
+            <button class="lang-trigger" aria-haspopup="true">
+                <span class="lang-trigger-flag"></span>
+                <span class="lang-trigger-label">VI</span>
+                <span class="chevron">▾</span>
+            </button>
+            <div class="lang-menu" role="menu">
+                <button class="lang-option active" data-lang="vi" role="menuitem">🇻🇳 <span>Tiếng Việt</span><span class="check">✓</span></button>
+                <button class="lang-option" data-lang="en" role="menuitem"> <span>English</span><span class="check" style="display:none"></span></button>
+            </div>
         </div>
+</nav>
 
-        <div style="margin-bottom:32px;">
-            <h2 style="font-size:20px; margin-bottom:8px;">v1.0.0 — 2026-02-27</h2>
-            <p style="color:#888; margin-bottom:12px;">Initial release</p>
-            <ul style="margin-left:20px; color:#aaa;">
-                <li>Edge-based scroll zones (right/left/top/bottom)</li>
-                <li>Delta-based motion scroll engine</li>
-                <li>Basic tray icon and hotkeys</li>
-                <li>Config via JSON file</li>
+    <div class="container" style="padding-top:100px;padding-bottom:60px;">
+        <div class="docs-content">
+            <h1>Changelog</h1>
+
+            <h2>v2.1 — 2025 (Hiện tại / Current)</h2>
+            <p><strong>3-Mode Redesign</strong> — Đơn giản hóa từ 5 xuống 3 chế độ, UX/UI được cải thiện đáng kể.</p>
+            <ul>
+                <li>✅ <strong>Mode 1: Click/Giữ</strong> — Click trái/phải + giữ để lăn liên tục với gia tốc tự nhiên
+                </li>
+                <li>✅ <strong>Mode 2: Chia Trên/Dưới</strong> — Click hoặc giữ mỗi nửa zone</li>
+                <li>✅ <strong>Mode 3: Di Chuột Tự Động</strong> — Hover vào zone = tự lăn, không cần click! (<em>Mode
+                        mới hoàn toàn</em>)</li>
+                <li>✅ Visual zone cải thiện cho từng mode với nhãn tiếng Việt + English</li>
+                <li>✅ WM_MOUSELEAVE tracking cho Mode 3 (hover auto dừng khi chuột rời zone)</li>
+                <li>✅ Extension: 3 mode cards; bilingual popup + options page</li>
+                <li>✅ Website/Docs: Toàn bộ hướng dẫn song ngữ Việt-Anh</li>
+                <li>✅ Config.json: thêm trường <code>hover_speed</code></li>
             </ul>
+
+            <h2>v2.0 — 2025</h2>
+            <p><strong>Kiến trúc mới</strong> — Chuyển từ edge-zone sang floating zone.</p>
+            <ul>
+                <li>Zone nổi always-on-top thay thế edge scrolling cũ</li>
+                <li>5 chế độ lăn (đã gộp xuống 3 ở v2.1)</li>
+                <li>Cài đặt đầy đủ trong tray icon menu</li>
+                <li>Âm thanh click via Web Audio API</li>
+                <li>Chặn wheel vật lý với phím thoát Alt</li>
+                <li>Resize handle cho zone</li>
+                <li>Extension: glassmorphism UI, popup và options page mới</li>
+                <li>CMake build system</li>
+            </ul>
+
+            <h2>v1.0 — FeelClick</h2>
+            <p>Phiên bản Chrome Extension đầu tiên (FeelClick) — zone cố định, click trái/phải cơ bản.</p>
         </div>
     </div>
+
     <footer class="footer">
         <div class="container">
-            <p>ScrollNice | <a href="index.html">Home</a> | <a href="https://github.com/anhhackta/ScrollNice">GitHub</a>
-            </p>
+            <p>ScrollNice | <a href="index.html">Trang chủ</a> | <a
+                    href="https://github.com/anhhackta/ScrollNice">GitHub</a></p>
         </div>
     </footer>
+<script src="js/i18n.js"></script>
 </body>
 
 </html>

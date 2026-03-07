@@ -6,31 +6,28 @@
 namespace sn {
 
 // ───── Scroll Modes ─────
+// Mode1 ClickHold : Left-click/hold=up, Right-click/hold=down
+// Mode2 SplitHold : Zone split top/bottom. Click/hold top=up, bottom=down
+// Mode3 HoverAuto : Move mouse to top half=up, bottom half=down, no click needed
 enum class ScrollMode {
-    ClickLR,        // Left-click=up, Right-click=down
-    ClickRL,        // Left-click=down, Right-click=up
-    SplitLR,        // Zone split left/right halves
-    SplitTB,        // Zone split top/bottom halves
-    Continuous      // Hold left=up gradually, hold right=down gradually
+    ClickHold,   // Mode 1: L-click/hold=up, R-click/hold=down
+    SplitHold,   // Mode 2: Top/Bottom split, click or hold
+    HoverAuto    // Mode 3: Hover top=scroll up, hover bottom=scroll down
 };
 
 inline std::string ScrollModeToString(ScrollMode m) {
     switch (m) {
-        case ScrollMode::ClickLR:    return "click_lr";
-        case ScrollMode::ClickRL:    return "click_rl";
-        case ScrollMode::SplitLR:    return "split_lr";
-        case ScrollMode::SplitTB:    return "split_tb";
-        case ScrollMode::Continuous: return "continuous";
+        case ScrollMode::ClickHold: return "click_hold";
+        case ScrollMode::SplitHold: return "split_hold";
+        case ScrollMode::HoverAuto: return "hover_auto";
     }
-    return "click_lr";
+    return "click_hold";
 }
 
 inline ScrollMode ScrollModeFromString(const std::string& s) {
-    if (s == "click_rl")    return ScrollMode::ClickRL;
-    if (s == "split_lr")    return ScrollMode::SplitLR;
-    if (s == "split_tb")    return ScrollMode::SplitTB;
-    if (s == "continuous")  return ScrollMode::Continuous;
-    return ScrollMode::ClickLR;
+    if (s == "split_hold") return ScrollMode::SplitHold;
+    if (s == "hover_auto") return ScrollMode::HoverAuto;
+    return ScrollMode::ClickHold;
 }
 
 // ───── Zone Config ─────
@@ -61,21 +58,24 @@ inline void from_json(const nlohmann::json& j, ZoneConfig& z) {
 
 // ───── Scroll Config ─────
 struct ScrollConfig {
-    std::string mode = "click_lr";
-    int scroll_amount = 300;      // pixels per click
-    int continuous_speed = 10;    // pixels per tick in continuous mode
-    int continuous_accel = 2;     // acceleration per second held
+    std::string mode = "click_hold";  // default: Mode 1
+    int scroll_amount = 300;          // pixels per click
+    int continuous_speed = 8;         // base speed px/tick for hold
+    int continuous_accel = 3;         // acceleration per second held
+    int hover_speed = 6;              // px/tick for hover auto mode
 };
 
 inline void to_json(nlohmann::json& j, const ScrollConfig& s) {
     j = {{"mode", s.mode}, {"scroll_amount", s.scroll_amount},
-         {"continuous_speed", s.continuous_speed}, {"continuous_accel", s.continuous_accel}};
+         {"continuous_speed", s.continuous_speed}, {"continuous_accel", s.continuous_accel},
+         {"hover_speed", s.hover_speed}};
 }
 inline void from_json(const nlohmann::json& j, ScrollConfig& s) {
     if (j.contains("mode")) j.at("mode").get_to(s.mode);
     if (j.contains("scroll_amount")) j.at("scroll_amount").get_to(s.scroll_amount);
     if (j.contains("continuous_speed")) j.at("continuous_speed").get_to(s.continuous_speed);
     if (j.contains("continuous_accel")) j.at("continuous_accel").get_to(s.continuous_accel);
+    if (j.contains("hover_speed")) j.at("hover_speed").get_to(s.hover_speed);
 }
 
 // ───── Sound Config ─────

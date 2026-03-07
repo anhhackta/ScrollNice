@@ -21,11 +21,11 @@
   "zone": {
     "color": "#3498db",
     "cover_image": "",
-    "height": 129,
+    "height": 133,
     "locked": false,
     "opacity": 0.25,
-    "width": 159,
-    "x": 625,
-    "y": 875
+    "width": 228,
+    "x": 82,
+    "y": 309
   }
 }

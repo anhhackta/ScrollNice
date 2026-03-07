@@ -1,60 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="vi-en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installation — ScrollNice</title>
+    <title>Cài đặt — ScrollNice Docs</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
+    <script>
+      (function(){
+        const t = localStorage.getItem('sn_theme') || 'dark';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
 </head>
 
 <body>
     <nav class="nav">
-        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
-            <div class="nav-links"><a href="../index.html#features">Features</a><a
-                    href="../index.html#download">Download</a><a href="index.html" style="color:#3498db;">Docs</a></div>
+        <div class="container">
+            <a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="../index.html">Trang chủ</a><a href="index.html" style="color:#3498db">Hướng
+                    dẫn</a></div>
         </div>
-    </nav>
+                <!-- Theme Toggle -->
+        <button class="theme-btn" title="Toggle theme">☀️</button>
+
+        <!-- Language Dropdown -->
+        <div class="lang-dropdown">
+            <button class="lang-trigger" aria-haspopup="true">
+                <span class="lang-trigger-flag"></span>
+                <span class="lang-trigger-label">VI</span>
+                <span class="chevron">▾</span>
+            </button>
+            <div class="lang-menu" role="menu">
+                <button class="lang-option active" data-lang="vi" role="menuitem">🇻🇳 <span>Tiếng Việt</span><span class="check">✓</span></button>
+                <button class="lang-option" data-lang="en" role="menuitem"> <span>English</span><span class="check" style="display:none"></span></button>
+            </div>
+        </div>
+</nav>
+
     <div class="container">
         <div class="docs-layout">
-            <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html"
-                    class="active">Installation</a><a href="quickstart.html">Quick Start</a><a href="modes.html">Scroll
-                    Modes</a><a href="settings.html">Settings</a><a href="troubleshoot.html">Troubleshooting</a><a
-                    href="privacy.html">Privacy</a></aside>
+            <aside class="sidebar">
+                <a href="index.html">Tổng quan</a>
+                <a href="install.html" class="active">Cài đặt</a>
+                <a href="quickstart.html">Bắt đầu nhanh</a>
+                <a href="modes.html">Chế độ lăn</a>
+                <a href="settings.html">Cài đặt chi tiết</a>
+                <a href="troubleshoot.html">Xử lý lỗi</a>
+                <a href="privacy.html">Quyền riêng tư</a>
+                <hr style="border-color:rgba(255,255,255,0.08);margin:8px 0;">
+    <a href="../index.html#donation" style="color:#e8917a;" data-i18n="sidebar_support">❤️ Ủng hộ</a>
+</aside>
+
             <main class="docs-content">
-                <h1>Installation</h1>
+                <h1>Cài đặt / Installation</h1>
 
-                <h2>Windows App (Portable)</h2>
+                <h2>🖥️ Ứng dụng Windows (Portable)</h2>
                 <ol>
-                    <li>Download <code>ScrollNice-portable.zip</code> from the <a href="../index.html#download">download
-                            page</a></li>
-                    <li>Extract the zip to any folder</li>
-                    <li>Run <code>ScrollNice.exe</code></li>
-                    <li>A floating zone will appear — you're ready to scroll!</li>
+                    <li>Tải <code>ScrollNice-v2.zip</code> từ <a
+                            href="https://github.com/anhhackta/ScrollNice/releases">trang Releases</a></li>
+                    <li>Giải nén vào bất kỳ thư mục nào</li>
+                    <li>Chạy <code>ScrollNice.exe</code></li>
+                    <li>Zone lăn sẽ xuất hiện — sẵn sàng sử dụng!</li>
                 </ol>
-                <p>Config is stored in <code>config.json</code> next to the exe.</p>
+                <p>Cấu hình lưu tại <code>config.json</code> cùng thư mục với file .exe.</p>
 
-                <h3>Start with Windows</h3>
-                <p>Open Settings (right-click tray icon → Settings) → check "Start with Windows".</p>
+                <h3>Khởi động cùng Windows / Start with Windows</h3>
+                <p>Click phải tray icon → Settings → tích "Khởi động cùng hệ thống".</p>
 
-                <h2>Chrome Extension</h2>
+                <h2>🌐 Chrome Extension</h2>
                 <ol>
-                    <li>Download or clone the extension folder</li>
-                    <li>Open Chrome → <code>chrome://extensions/</code></li>
-                    <li>Enable <strong>Developer mode</strong> (top-right toggle)</li>
+                    <li>Tải hoặc clone folder extension</li>
+                    <li>Mở Chrome → vào <code>chrome://extensions/</code></li>
+                    <li>Bật <strong>Developer mode</strong> (nút toggle góc trên phải)</li>
                     <li>Click <strong>Load unpacked</strong></li>
-                    <li>Select the <code>extension/FeelClick</code> folder</li>
-                    <li>The ScrollNice icon appears in the toolbar</li>
+                    <li>Chọn thư mục <code>extension/FeelClick</code></li>
+                    <li>Icon ScrollNice xuất hiện trên toolbar</li>
                 </ol>
 
-                <h2>System Requirements</h2>
+                <h2>Yêu cầu hệ thống / Requirements</h2>
                 <table>
                     <tr>
-                        <th>Component</th>
-                        <th>Requirement</th>
+                        <th>Thành phần</th>
+                        <th>Yêu cầu</th>
                     </tr>
                     <tr>
-                        <td>OS</td>
+                        <td>Hệ điều hành</td>
                         <td>Windows 10 / 11 (64-bit)</td>
                     </tr>
                     <tr>
@@ -63,25 +95,27 @@
                     </tr>
                     <tr>
                         <td>CPU</td>
-                        <td>≈ 0% idle</td>
+                        <td>≈ 0% khi không dùng</td>
                     </tr>
                     <tr>
-                        <td>Disk</td>
+                        <td>Dung lượng</td>
                         <td>&lt; 1 MB</td>
                     </tr>
                     <tr>
-                        <td>Chrome</td>
-                        <td>v88+ (for extension)</td>
+                        <td>Chrome (Extension)</td>
+                        <td>v88+</td>
                     </tr>
                 </table>
             </main>
         </div>
     </div>
+
     <footer class="footer">
         <div class="container">
-            <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
+            <p>ScrollNice Docs | <a href="../index.html">Trang chủ</a></p>
         </div>
     </footer>
+<script src="../js/docs-i18n.js"></script>
 </body>
 
 </html>

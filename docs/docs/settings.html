@@ -1,175 +1,215 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="vi-en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings — ScrollNice</title>
+    <title>Cài đặt chi tiết — ScrollNice Docs</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
+    <script>
+      (function(){
+        const t = localStorage.getItem('sn_theme') || 'dark';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
 </head>
 
 <body>
     <nav class="nav">
-        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
-            <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
+        <div class="container">
+            <a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="../index.html">Trang chủ</a><a href="index.html" style="color:#3498db">Hướng
+                    dẫn</a></div>
         </div>
-    </nav>
+                <!-- Theme Toggle -->
+        <button class="theme-btn" title="Toggle theme">☀️</button>
+
+        <!-- Language Dropdown -->
+        <div class="lang-dropdown">
+            <button class="lang-trigger" aria-haspopup="true">
+                <span class="lang-trigger-flag"></span>
+                <span class="lang-trigger-label">VI</span>
+                <span class="chevron">▾</span>
+            </button>
+            <div class="lang-menu" role="menu">
+                <button class="lang-option active" data-lang="vi" role="menuitem">🇻🇳 <span>Tiếng Việt</span><span class="check">✓</span></button>
+                <button class="lang-option" data-lang="en" role="menuitem"> <span>English</span><span class="check" style="display:none"></span></button>
+            </div>
+        </div>
+</nav>
+
     <div class="container">
         <div class="docs-layout">
-            <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html">Installation</a><a
-                    href="quickstart.html">Quick Start</a><a href="modes.html">Scroll Modes</a><a href="settings.html"
-                    class="active">Settings</a><a href="troubleshoot.html">Troubleshooting</a><a
-                    href="privacy.html">Privacy</a></aside>
-            <main class="docs-content">
-                <h1>Settings Reference</h1>
+            <aside class="sidebar">
+                <a href="index.html">Tổng quan</a>
+                <a href="install.html">Cài đặt</a>
+                <a href="quickstart.html">Bắt đầu nhanh</a>
+                <a href="modes.html">Chế độ lăn</a>
+                <a href="settings.html" class="active">Cài đặt chi tiết</a>
+                <a href="troubleshoot.html">Xử lý lỗi</a>
+                <a href="privacy.html">Quyền riêng tư</a>
+                <hr style="border-color:rgba(255,255,255,0.08);margin:8px 0;">
+    <a href="../index.html#donation" style="color:#e8917a;" data-i18n="sidebar_support">❤️ Ủng hộ</a>
+</aside>
 
-                <h2>General</h2>
+            <main class="docs-content">
+                <h1>Cài đặt chi tiết / Settings Reference</h1>
+
+                <h2>Chung / General</h2>
                 <table>
                     <tr>
-                        <th>Setting</th>
-                        <th>Default</th>
-                        <th>Description</th>
+                        <th>Cài đặt</th>
+                        <th>Mặc định</th>
+                        <th>Mô tả</th>
                     </tr>
                     <tr>
-                        <td>Enabled</td>
-                        <td>true</td>
-                        <td>Master on/off toggle</td>
+                        <td>Bật/Tắt</td>
+                        <td>Bật</td>
+                        <td>Bật/Tắt toàn bộ ứng dụng</td>
                     </tr>
                     <tr>
-                        <td>Start with Windows</td>
-                        <td>false</td>
-                        <td>Auto-launch on login (registry key)</td>
+                        <td>Khởi động cùng Windows</td>
+                        <td>Tắt</td>
+                        <td>Tự chạy khi đăng nhập Windows (registry key)</td>
                     </tr>
                     <tr>
-                        <td>Block Mouse Wheel</td>
-                        <td>false</td>
-                        <td>Block physical wheel scroll events (Alt to bypass)</td>
+                        <td>Chặn Wheel</td>
+                        <td>Tắt</td>
+                        <td>Chặn sự kiện wheel vật lý. Nhấn Alt để bỏ qua chặn nhất thời</td>
                     </tr>
                 </table>
 
-                <h2>Scroll</h2>
+                <h2>Chế độ lăn / Scroll Mode</h2>
                 <table>
                     <tr>
-                        <th>Setting</th>
-                        <th>Default</th>
-                        <th>Description</th>
+                        <th>Cài đặt</th>
+                        <th>Mặc định</th>
+                        <th>Mô tả</th>
                     </tr>
                     <tr>
-                        <td>Mode</td>
-                        <td>Click L↑ R↓</td>
-                        <td>See <a href="modes.html">Scroll Modes</a></td>
+                        <td>Chế độ</td>
+                        <td>Mode 1</td>
+                        <td>Xem <a href="modes.html">Chi tiết 3 chế độ</a></td>
                     </tr>
                     <tr>
                         <td>Scroll Amount</td>
                         <td>300 px</td>
-                        <td>Distance per click (sensitivity). Range: 50–800px</td>
+                        <td>Số pixel lăn mỗi lần click (50–800)</td>
                     </tr>
                     <tr>
-                        <td>Continuous Speed</td>
-                        <td>10</td>
-                        <td>Base speed for continuous mode (px/tick)</td>
+                        <td>Tốc độ giữ</td>
+                        <td>8 px/tick</td>
+                        <td>Tốc độ cơ bản khi giữ chuột</td>
                     </tr>
                     <tr>
-                        <td>Continuous Acceleration</td>
-                        <td>2</td>
-                        <td>Speed increase per second held</td>
+                        <td>Gia tốc giữ</td>
+                        <td>3</td>
+                        <td>Tăng tốc mỗi giây khi giữ</td>
+                    </tr>
+                    <tr>
+                        <td>Tốc độ hover</td>
+                        <td>6 px/tick</td>
+                        <td>Tốc độ cuộn ở Mode 3 di chuột</td>
                     </tr>
                 </table>
 
                 <h2>Zone</h2>
                 <table>
                     <tr>
-                        <th>Setting</th>
-                        <th>Default</th>
-                        <th>Description</th>
+                        <th>Cài đặt</th>
+                        <th>Mặc định</th>
+                        <th>Mô tả</th>
                     </tr>
                     <tr>
-                        <td>Width × Height</td>
-                        <td>120 × 180 px</td>
-                        <td>Zone dimensions (min 60px each)</td>
+                        <td>Rộng × Cao</td>
+                        <td>120 × 200 px</td>
+                        <td>Kích thước zone (tối thiểu 60px mỗi chiều)</td>
                     </tr>
                     <tr>
-                        <td>Opacity</td>
-                        <td>25%</td>
-                        <td>Transparency level (5–100%)</td>
+                        <td>Độ trong suốt</td>
+                        <td>30%</td>
+                        <td>Mức trong suốt (5–100%)</td>
                     </tr>
                     <tr>
-                        <td>Color</td>
+                        <td>Màu sắc</td>
                         <td>#3498db</td>
-                        <td>Background color (Windows app only)</td>
+                        <td>Màu nền zone (chỉ ứng dụng Windows)</td>
                     </tr>
                     <tr>
-                        <td>Cover Image</td>
-                        <td>none</td>
-                        <td>Custom background image for the zone</td>
+                        <td>Ảnh bìa</td>
+                        <td>Không có</td>
+                        <td>Đường dẫn ảnh tùy chỉnh cho zone</td>
                     </tr>
                     <tr>
-                        <td>Lock Position</td>
-                        <td>false</td>
-                        <td>Prevent dragging the zone</td>
-                    </tr>
-                </table>
-
-                <h2>Sound</h2>
-                <table>
-                    <tr>
-                        <th>Setting</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                    <tr>
-                        <td>Click Sound</td>
-                        <td>enabled</td>
-                        <td>Play sound on each click in zone</td>
-                    </tr>
-                    <tr>
-                        <td>Sound File</td>
-                        <td>built-in</td>
-                        <td>Custom WAV file path (Windows app only)</td>
+                        <td>Khoá vị trí</td>
+                        <td>Tắt</td>
+                        <td>Khóa zone, không thể kéo nhầm</td>
                     </tr>
                 </table>
 
-                <h2>Hotkeys (Windows App)</h2>
+                <h2>Âm thanh / Sound</h2>
                 <table>
                     <tr>
-                        <th>Action</th>
-                        <th>Default</th>
+                        <th>Cài đặt</th>
+                        <th>Mặc định</th>
+                        <th>Mô tả</th>
                     </tr>
                     <tr>
-                        <td>Toggle On/Off</td>
+                        <td>Âm thanh click</td>
+                        <td>Bật</td>
+                        <td>Phát âm thanh mỗi lần click trong zone</td>
+                    </tr>
+                    <tr>
+                        <td>File âm thanh</td>
+                        <td>Tích hợp</td>
+                        <td>Đường dẫn file WAV tùy chỉnh (để trống = dùng mặc định)</td>
+                    </tr>
+                </table>
+
+                <h2>Phím tắt / Hotkeys (Windows)</h2>
+                <table>
+                    <tr>
+                        <th>Chức năng</th>
+                        <th>Mặc định</th>
+                    </tr>
+                    <tr>
+                        <td>Bật/Tắt ScrollNice</td>
                         <td><code>Ctrl+Alt+S</code></td>
                     </tr>
                     <tr>
-                        <td>Toggle Edit Mode</td>
+                        <td>Chế độ chỉnh sửa</td>
                         <td><code>Ctrl+Alt+E</code></td>
                     </tr>
                     <tr>
-                        <td>Toggle Wheel Block</td>
+                        <td>Bật/Tắt chặn Wheel</td>
                         <td><code>Ctrl+Alt+W</code></td>
                     </tr>
                 </table>
 
-                <h2>Config File (Windows)</h2>
-                <p>All settings are stored in <code>config.json</code> next to the exe. You can edit this file directly
-                    with any text editor. Changes take effect on restart.</p>
+                <h2>File config / Config File</h2>
+                <p>Tất cả cài đặt lưu ở <code>config.json</code> cùng thư mục exe. Có thể chỉnh trực tiếp bằng text
+                    editor:</p>
                 <pre><code>{
-  "version": 1,
-  "enabled": true,
-  "start_with_windows": false,
-  "wheel_block": false,
-  "zone": { "x": 100, "y": 100, "width": 120, "height": 180, "opacity": 0.25 },
-  "scroll": { "mode": "click_lr", "scroll_amount": 300 },
-  "sound": { "enabled": true },
-  "hotkeys": { "toggle_enabled": "Ctrl+Alt+S" }
+  "scroll": {
+    "mode": "click_hold",
+    "scroll_amount": 300,
+    "continuous_speed": 8,
+    "continuous_accel": 3,
+    "hover_speed": 6
+  },
+  "zone": { "x": 60, "y": 100, "width": 120, "height": 200, "opacity": 0.30 }
 }</code></pre>
             </main>
         </div>
     </div>
+
     <footer class="footer">
         <div class="container">
-            <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
+            <p>ScrollNice Docs | <a href="../index.html">Trang chủ</a></p>
         </div>
     </footer>
+<script src="../js/docs-i18n.js"></script>
 </body>
 
 </html>

@@ -1,77 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="vi-en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Troubleshooting — ScrollNice</title>
+    <title>Xử lý lỗi — ScrollNice Docs</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
+    <script>
+      (function(){
+        const t = localStorage.getItem('sn_theme') || 'dark';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
 </head>
 
 <body>
     <nav class="nav">
-        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
-            <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
+        <div class="container">
+            <a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+            <div class="nav-links"><a href="../index.html">Trang chủ</a><a href="index.html" style="color:#3498db">Hướng
+                    dẫn</a></div>
         </div>
-    </nav>
+                <!-- Theme Toggle -->
+        <button class="theme-btn" title="Toggle theme">☀️</button>
+
+        <!-- Language Dropdown -->
+        <div class="lang-dropdown">
+            <button class="lang-trigger" aria-haspopup="true">
+                <span class="lang-trigger-flag"></span>
+                <span class="lang-trigger-label">VI</span>
+                <span class="chevron">▾</span>
+            </button>
+            <div class="lang-menu" role="menu">
+                <button class="lang-option active" data-lang="vi" role="menuitem">🇻🇳 <span>Tiếng Việt</span><span class="check">✓</span></button>
+                <button class="lang-option" data-lang="en" role="menuitem"> <span>English</span><span class="check" style="display:none"></span></button>
+            </div>
+        </div>
+</nav>
+
     <div class="container">
         <div class="docs-layout">
-            <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html">Installation</a><a
-                    href="quickstart.html">Quick Start</a><a href="modes.html">Scroll Modes</a><a
-                    href="settings.html">Settings</a><a href="troubleshoot.html" class="active">Troubleshooting</a><a
-                    href="privacy.html">Privacy</a></aside>
+            <aside class="sidebar">
+                <a href="index.html">Tổng quan</a>
+                <a href="install.html">Cài đặt</a>
+                <a href="quickstart.html">Bắt đầu nhanh</a>
+                <a href="modes.html">Chế độ lăn</a>
+                <a href="settings.html">Cài đặt chi tiết</a>
+                <a href="troubleshoot.html" class="active">Xử lý lỗi</a>
+                <a href="privacy.html">Quyền riêng tư</a>
+                <hr style="border-color:rgba(255,255,255,0.08);margin:8px 0;">
+    <a href="../index.html#donation" style="color:#e8917a;" data-i18n="sidebar_support">❤️ Ủng hộ</a>
+</aside>
+
             <main class="docs-content">
-                <h1>Troubleshooting</h1>
+                <h1>Xử lý lỗi / Troubleshooting</h1>
 
-                <h2>Zone not visible</h2>
+                <h2>Zone không hiển thị / Zone not visible</h2>
                 <ul>
-                    <li>Ensure ScrollNice is running (check system tray)</li>
-                    <li>Press <code>Ctrl+Alt+S</code> to toggle on</li>
-                    <li>Check if opacity is too low in Settings</li>
+                    <li>Kiểm tra ScrollNice đang chạy (icon trong khay hệ thống)</li>
+                    <li>Nhấn <code>Ctrl+Alt+S</code> để bật lại</li>
+                    <li>Kiểm tra độ trong suốt không quá thấp trong Settings</li>
                 </ul>
 
-                <h2>Scrolling doesn't work</h2>
+                <h2>Click không lăn / Clicking doesn't scroll</h2>
                 <ul>
-                    <li>Make sure you're clicking <strong>inside</strong> the zone</li>
-                    <li>Check that the correct mode is selected</li>
-                    <li>Some apps with custom scroll handling may not respond to <code>SendInput</code> wheel events
+                    <li>Đảm bảo click <strong>vào bên trong zone</strong></li>
+                    <li>Kiểm tra chế độ đang chọn có phù hợp không</li>
+                    <li>Mode 3 không cần click — chỉ cần di chuột vào zone</li>
+                    <li>Một số ứng dụng xử lý scroll theo cách riêng có thể không phản hồi <code>SendInput</code></li>
+                </ul>
+
+                <h2>Mode 3 không hoạt động / Mode 3 not working</h2>
+                <ul>
+                    <li>Mode 3 là Hover Auto — di chuột vào nửa trên/dưới zone, KHÔNG cần click</li>
+                    <li>Nếu chuột rời khỏi zone, lăn tự động dừng — đây là hành vi đúng</li>
+                    <li>Kiểm tra chắc chắn chọn "Mode 3" trong Settings</li>
+                </ul>
+
+                <h2>Zone không di chuyển được</h2>
+                <ul>
+                    <li>Kiểm tra "Lock Position" có đang bật không → tắt trong Settings</li>
+                    <li>Vào Edit Mode bằng <code>Ctrl+Alt+E</code> để kéo zone</li>
+                </ul>
+
+                <h2>Extension không hoạt động trên trang</h2>
+                <ul>
+                    <li>Extension không chạy được trên trang <code>chrome://</code> hoặc Chrome Web Store</li>
+                    <li>Thử reload trang sau khi cài extension</li>
+                    <li>Kiểm tra extension đang bật tại <code>chrome://extensions</code></li>
+                </ul>
+
+                <h2>Wheel block bị kẹt</h2>
+                <ul>
+                    <li><strong>Phím thoát khẩn cấp:</strong> giữ <code>Alt</code> khi cuộn để bỏ qua block tạm thời
                     </li>
-                </ul>
-
-                <h2>Zone won't move</h2>
-                <ul>
-                    <li>Check if "Lock Position" is enabled → unlock it in Settings</li>
-                    <li>Enter Edit Mode with <code>Ctrl+Alt+E</code></li>
-                </ul>
-
-                <h2>Extension not working on a page</h2>
-                <ul>
-                    <li>Extensions cannot run on <code>chrome://</code> pages or the Chrome Web Store</li>
-                    <li>Try reloading the page after installing</li>
-                    <li>Check that the extension is enabled in <code>chrome://extensions</code></li>
-                </ul>
-
-                <h2>Wheel block is stuck</h2>
-                <ul>
-                    <li><strong>Panic key</strong>: Hold <code>Alt</code> while scrolling to bypass the block</li>
-                    <li>Press <code>Ctrl+Alt+W</code> to toggle wheel block off</li>
-                    <li>Press <code>Ctrl+Alt+S</code> to disable ScrollNice entirely</li>
-                </ul>
-
-                <h2>High CPU usage</h2>
-                <p>ScrollNice should use ≈0% CPU when idle. If you see high usage:</p>
-                <ul>
-                    <li>Ensure you're using the latest version</li>
-                    <li>Check if another app is conflicting with the mouse hook</li>
+                    <li>Nhấn <code>Ctrl+Alt+W</code> để tắt Wheel Block</li>
+                    <li>Nhấn <code>Ctrl+Alt+S</code> để tắt toàn bộ ScrollNice</li>
                 </ul>
             </main>
         </div>
     </div>
+
     <footer class="footer">
         <div class="container">
-            <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
+            <p>ScrollNice Docs | <a href="../index.html">Trang chủ</a></p>
         </div>
     </footer>
+<script src="../js/docs-i18n.js"></script>
 </body>
 
 </html>

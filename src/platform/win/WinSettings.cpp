@@ -13,11 +13,9 @@ enum {
     IDC_ENABLED = 101,
     IDC_START_WINDOWS = 102,
     IDC_WHEEL_BLOCK = 103,
-    IDC_MODE_CLICK_LR = 110,
-    IDC_MODE_CLICK_RL = 111,
-    IDC_MODE_SPLIT_LR = 112,
-    IDC_MODE_SPLIT_TB = 113,
-    IDC_MODE_CONTINUOUS = 114,
+    IDC_MODE_CLICK_HOLD = 110,
+    IDC_MODE_SPLIT_HOLD = 111,
+    IDC_MODE_HOVER_AUTO = 112,
     IDC_SCROLL_AMOUNT = 120,
     IDC_SCROLL_AMOUNT_LABEL = 121,
     IDC_ZONE_WIDTH = 130,
@@ -86,11 +84,9 @@ void WinSettings::InitControls(HWND dlg) {
 
     // ─── Scroll Mode ───
     mk(L"STATIC", L"── Scroll Mode ──", SS_CENTER, 10, y, 340, 18, 0); y += 24;
-    mk(L"BUTTON", L"Click: Left\u2191 Right\u2193", BS_AUTORADIOBUTTON | WS_GROUP, 20, y, 200, 20, IDC_MODE_CLICK_LR); y += 20;
-    mk(L"BUTTON", L"Click: Left\u2193 Right\u2191", BS_AUTORADIOBUTTON, 20, y, 200, 20, IDC_MODE_CLICK_RL); y += 20;
-    mk(L"BUTTON", L"Split Left/Right", BS_AUTORADIOBUTTON, 20, y, 200, 20, IDC_MODE_SPLIT_LR); y += 20;
-    mk(L"BUTTON", L"Split Top/Bottom", BS_AUTORADIOBUTTON, 20, y, 200, 20, IDC_MODE_SPLIT_TB); y += 20;
-    mk(L"BUTTON", L"Continuous (Hold)", BS_AUTORADIOBUTTON, 20, y, 200, 20, IDC_MODE_CONTINUOUS); y += 28;
+    mk(L"BUTTON", L"Mode 1: Click/Hold L\u2191 R\u2193", BS_AUTORADIOBUTTON | WS_GROUP, 20, y, 280, 20, IDC_MODE_CLICK_HOLD); y += 20;
+    mk(L"BUTTON", L"Mode 2: Click/Hold Top\u2191 Bottom\u2193", BS_AUTORADIOBUTTON, 20, y, 280, 20, IDC_MODE_SPLIT_HOLD); y += 20;
+    mk(L"BUTTON", L"Mode 3: Hover Top\u2191 Bottom\u2193 (no click)", BS_AUTORADIOBUTTON, 20, y, 280, 20, IDC_MODE_HOVER_AUTO); y += 28;
 
     // ─── Scroll Sensitivity ───
     mk(L"STATIC", L"── Sensitivity ──", SS_CENTER, 10, y, 340, 18, 0); y += 24;
@@ -131,12 +127,10 @@ void WinSettings::InitControls(HWND dlg) {
         CheckDlgButton(dlg, IDC_WHEEL_BLOCK, cfg_->wheel_block ? BST_CHECKED : BST_UNCHECKED);
 
         ScrollMode m = ScrollModeFromString(cfg_->scroll.mode);
-        int modeId = IDC_MODE_CLICK_LR;
-        if (m == ScrollMode::ClickRL) modeId = IDC_MODE_CLICK_RL;
-        if (m == ScrollMode::SplitLR) modeId = IDC_MODE_SPLIT_LR;
-        if (m == ScrollMode::SplitTB) modeId = IDC_MODE_SPLIT_TB;
-        if (m == ScrollMode::Continuous) modeId = IDC_MODE_CONTINUOUS;
-        CheckRadioButton(dlg, IDC_MODE_CLICK_LR, IDC_MODE_CONTINUOUS, modeId);
+        int modeId = IDC_MODE_CLICK_HOLD;
+        if (m == ScrollMode::SplitHold) modeId = IDC_MODE_SPLIT_HOLD;
+        if (m == ScrollMode::HoverAuto) modeId = IDC_MODE_HOVER_AUTO;
+        CheckRadioButton(dlg, IDC_MODE_CLICK_HOLD, IDC_MODE_HOVER_AUTO, modeId);
 
         SetDlgItemInt(dlg, IDC_SCROLL_AMOUNT, cfg_->scroll.scroll_amount, FALSE);
         SetDlgItemInt(dlg, IDC_ZONE_WIDTH, cfg_->zone.width, FALSE);
@@ -159,11 +153,9 @@ void WinSettings::ReadControls(HWND dlg) {
     cfg_->start_with_windows = IsDlgButtonChecked(dlg, IDC_START_WINDOWS) == BST_CHECKED;
     cfg_->wheel_block = IsDlgButtonChecked(dlg, IDC_WHEEL_BLOCK) == BST_CHECKED;
 
-    if (IsDlgButtonChecked(dlg, IDC_MODE_CLICK_LR))   cfg_->scroll.mode = "click_lr";
-    if (IsDlgButtonChecked(dlg, IDC_MODE_CLICK_RL))   cfg_->scroll.mode = "click_rl";
-    if (IsDlgButtonChecked(dlg, IDC_MODE_SPLIT_LR))   cfg_->scroll.mode = "split_lr";
-    if (IsDlgButtonChecked(dlg, IDC_MODE_SPLIT_TB))   cfg_->scroll.mode = "split_tb";
-    if (IsDlgButtonChecked(dlg, IDC_MODE_CONTINUOUS)) cfg_->scroll.mode = "continuous";
+    if (IsDlgButtonChecked(dlg, IDC_MODE_CLICK_HOLD)) cfg_->scroll.mode = "click_hold";
+    if (IsDlgButtonChecked(dlg, IDC_MODE_SPLIT_HOLD)) cfg_->scroll.mode = "split_hold";
+    if (IsDlgButtonChecked(dlg, IDC_MODE_HOVER_AUTO)) cfg_->scroll.mode = "hover_auto";
 
     cfg_->scroll.scroll_amount = GetDlgItemInt(dlg, IDC_SCROLL_AMOUNT, nullptr, FALSE);
     if (cfg_->scroll.scroll_amount < 10) cfg_->scroll.scroll_amount = 10;

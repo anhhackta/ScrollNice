@@ -14,6 +14,8 @@ enum class ZoneEvent {
     RightClickUp,
     DragMove,
     ResizeEnd,
+    HoverMove,    // mouse moved inside zone (for Mode 3)
+    HoverLeave,   // mouse left zone (for Mode 3)
     Closed
 };
 
@@ -51,12 +53,11 @@ public:
 private:
     static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
     void Paint(HDC hdc);
-    void DrawSplitLine(HDC hdc);
-    void DrawModeLabel(HDC hdc);
+    void DrawModeVisuals(HDC hdc);
 
     HWND hwnd_ = nullptr;
     ZoneConfig cfg_;
-    ScrollMode mode_ = ScrollMode::ClickLR;
+    ScrollMode mode_ = ScrollMode::ClickHold;  // default Mode 1
     bool editMode_ = false;
     bool enabled_ = true;
     bool isDragging_ = false;
@@ -64,6 +65,7 @@ private:
     RECT  dragStartRect_ = {};
     bool isResizing_ = false;
     POINT resizeStart_ = {};
+    bool mouseTracking_ = false;  // for WM_MOUSELEAVE (Mode 3)
 
     ZoneEventCallback callback_;
     HBITMAP coverBmp_ = nullptr;

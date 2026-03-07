@@ -1,11 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy — ScrollNice</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
+    <script>
+      (function(){
+        const t = localStorage.getItem('sn_theme') || 'dark';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
 </head>
 
 <body>
@@ -13,13 +20,30 @@
         <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
             <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
         </div>
-    </nav>
+                <!-- Theme Toggle -->
+        <button class="theme-btn" title="Toggle theme">☀️</button>
+
+        <!-- Language Dropdown -->
+        <div class="lang-dropdown">
+            <button class="lang-trigger" aria-haspopup="true">
+                <span class="lang-trigger-flag"></span>
+                <span class="lang-trigger-label">VI</span>
+                <span class="chevron">▾</span>
+            </button>
+            <div class="lang-menu" role="menu">
+                <button class="lang-option active" data-lang="vi" role="menuitem">🇻🇳 <span>Tiếng Việt</span><span class="check">✓</span></button>
+                <button class="lang-option" data-lang="en" role="menuitem"> <span>English</span><span class="check" style="display:none"></span></button>
+            </div>
+        </div>
+</nav>
     <div class="container">
         <div class="docs-layout">
             <aside class="sidebar"><a href="index.html">Overview</a><a href="install.html">Installation</a><a
                     href="quickstart.html">Quick Start</a><a href="modes.html">Scroll Modes</a><a
                     href="settings.html">Settings</a><a href="troubleshoot.html">Troubleshooting</a><a
-                    href="privacy.html" class="active">Privacy</a></aside>
+                    href="privacy.html" class="active">Privacy</a>    <hr style="border-color:rgba(255,255,255,0.08);margin:8px 0;">
+    <a href="../index.html#donation" style="color:#e8917a;" data-i18n="sidebar_support">❤️ Ủng hộ</a>
+</aside>
             <main class="docs-content">
                 <h1>Privacy Policy</h1>
                 <p>ScrollNice is designed with privacy as a core principle.</p>
@@ -61,6 +85,7 @@
             <p>ScrollNice Docs | <a href="../index.html">Home</a></p>
         </div>
     </footer>
+<script src="../js/docs-i18n.js"></script>
 </body>
 
 </html>

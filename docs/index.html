@@ -1,149 +1,321 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScrollNice — Scroll by Clicking, No Wheel Needed</title>
+    <title>ScrollNice — Lăn Chuột Bằng Click / Scroll by Clicking</title>
     <meta name="description"
-        content="Free, lightweight Windows utility and Chrome extension for scrolling with a virtual click zone. Perfect for broken mouse wheels or one-hand workflows.">
+        content="Ứng dụng Windows và Chrome Extension lăn trang bằng click chuột, không cần wheel. Free, lightweight scrolling utility.">
+    <meta name="keywords" content="scrollnice, scroll, mouse wheel, click to scroll, windows utility, chrome extension">
+    <meta property="og:title" content="ScrollNice — Scroll by Clicking">
+    <meta property="og:description"
+        content="Floating zone click to scroll — no wheel needed. 3 modes, always-on-top, free.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Prevent flash of wrong theme -->
+    <script>
+        (function () {
+            const t = localStorage.getItem('sn_theme') || 'dark';
+            document.documentElement.dataset.theme = t;
+        })();
+    </script>
 </head>
 
 <body>
 
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress"></div>
+
     <!-- Nav -->
-    <nav class="nav">
+    <nav class="nav" id="main-nav">
         <div class="container">
             <a href="index.html" class="nav-brand">🖱️ ScrollNice</a>
+
             <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#modes">Modes</a>
-                <a href="#download">Download</a>
-                <a href="docs/index.html">Docs</a>
-                <a href="changelog.html">Changelog</a>
+                <a href="#features" data-i18n="nav_features">Tính năng</a>
+                <a href="#modes" data-i18n="nav_modes">Chế độ</a>
+                <a href="#download" data-i18n="nav_download">Tải về</a>
+                <a href="docs/index.html" data-i18n="nav_docs">Hướng dẫn</a>
+                <a href="changelog.html" data-i18n="nav_changelog">Changelog</a>
+                <a href="#donation" style="color:#f87171;" data-i18n="nav_support">Ủng hộ</a>
             </div>
-            <a href="#download" class="nav-cta">Download Free</a>
+
+            <!-- Theme Toggle -->
+            <button class="theme-btn" title="Toggle theme">☀️</button>
+
+            <!-- Language Dropdown -->
+            <div class="lang-dropdown" id="lang-dropdown-nav">
+                <button class="lang-trigger" aria-haspopup="true" aria-expanded="false">
+                    <span class="lang-trigger-flag">🇻🇳</span>
+                    <span class="lang-trigger-label">VI</span>
+                    <span class="chevron">▾</span>
+                </button>
+                <div class="lang-menu" role="menu">
+                    <button class="lang-option active" data-lang="vi" role="menuitem">
+                        🇻🇳 <span>Tiếng Việt</span>
+                        <span class="check">✓</span>
+                    </button>
+                    <button class="lang-option" data-lang="en" role="menuitem">
+                        🇺🇸 <span>English</span>
+                        <span class="check" style="display:none">✓</span>
+                    </button>
+                </div>
+            </div>
+
+            <a href="#download" class="nav-cta" data-i18n="nav_cta">⬇ Tải về miễn phí</a>
+
+            <!-- Hamburger (mobile) -->
+            <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
-    <!-- Hero -->
+    <!-- Mobile Nav -->
+    <div class="nav-mobile" id="nav-mobile">
+        <a href="#features" data-i18n="nav_features">Tính năng</a>
+        <a href="#modes" data-i18n="nav_modes">Chế độ</a>
+        <a href="#download" data-i18n="nav_download">Tải về</a>
+        <a href="docs/index.html" data-i18n="nav_docs">Hướng dẫn</a>
+        <a href="changelog.html" data-i18n="nav_changelog">Changelog</a>
+        <a href="#donation" style="color:#f87171;" data-i18n="nav_support">❤️ Ủng hộ</a>
+        <div style="display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--border);">
+            <button class="theme-btn" style="margin-left:0;">☀️</button>
+            <!-- Dropdown in mobile menu too -->
+            <div class="lang-dropdown" id="lang-dropdown-mobile">
+                <button class="lang-trigger">
+                    <span class="lang-trigger-flag">🇻🇳</span>
+                    <span class="lang-trigger-label">VI</span>
+                    <span class="chevron">▾</span>
+                </button>
+                <div class="lang-menu">
+                    <button class="lang-option active" data-lang="vi">🇻🇳 <span>Tiếng Việt</span><span
+                            class="check">✓</span></button>
+                    <button class="lang-option" data-lang="en">🇺🇸 <span>English</span><span class="check"
+                            style="display:none">✓</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════ HERO ══════════════ -->
     <section class="hero">
+        <!-- Canvas particles -->
+        <canvas id="hero-canvas"
+            style="width:100%;height:100%;position:absolute;inset:0;z-index:0;pointer-events:none;"></canvas>
+
+        <!-- Rotating orbit rings (like unikorn.vn's bronze drum) -->
+        <div class="hero-orbit">
+            <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer ring with tick marks -->
+                <circle cx="250" cy="250" r="240" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 18" />
+                <!-- Mid ring -->
+                <circle cx="250" cy="250" r="195" stroke="currentColor" stroke-width="1" stroke-dasharray="4 28" />
+                <!-- Concentric decorative rings -->
+                <circle cx="250" cy="250" r="155" stroke="currentColor" stroke-width="1.5" />
+                <circle cx="250" cy="250" r="120" stroke="currentColor" stroke-width=".8" stroke-dasharray="3 14" />
+                <circle cx="250" cy="250" r="85" stroke="currentColor" stroke-width="1.2" />
+                <!-- Center cross -->
+                <line x1="250" y1="155" x2="250" y2="345" stroke="currentColor" stroke-width=".8" opacity=".5" />
+                <line x1="160" y1="250" x2="340" y2="250" stroke="currentColor" stroke-width=".8" opacity=".5" />
+                <!-- 4 dots on middle ring -->
+                <circle cx="250" cy="95" r="4" fill="currentColor" />
+                <circle cx="405" cy="250" r="4" fill="currentColor" />
+                <circle cx="250" cy="405" r="4" fill="currentColor" />
+                <circle cx="95" cy="250" r="4" fill="currentColor" />
+            </svg>
+        </div>
+        <div class="hero-orbit-inner">
+            <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="150" cy="150" r="140" stroke="currentColor" stroke-width="2" stroke-dasharray="3 20" />
+                <circle cx="150" cy="150" r="100" stroke="currentColor" stroke-width="1.2" />
+                <circle cx="150" cy="150" r="60" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 10" />
+                <circle cx="150" cy="150" r="20" stroke="currentColor" stroke-width="1.2" />
+                <circle cx="150" cy="10" r="5" fill="currentColor" />
+                <circle cx="290" cy="150" r="5" fill="currentColor" />
+                <circle cx="150" cy="290" r="5" fill="currentColor" />
+                <circle cx="10" cy="150" r="5" fill="currentColor" />
+            </svg>
+        </div>
+
         <div class="container">
-            <div class="hero-badge">✨ Free &amp; Open Source</div>
-            <h1>Scroll by <span class="gradient">Clicking</span>,<br>No Wheel Needed</h1>
-            <p>A lightweight floating zone that turns mouse clicks into smooth scrolling. For broken wheels, one-hand
-                workflows, or anyone who wants a better scroll experience.</p>
+            <div class="hero-badge" data-i18n="hero_badge">✨ Miễn phí &amp; Mã nguồn mở</div>
+            <h1 data-i18n="hero_h1">Lăn Chuột Bằng <span class="gradient">Click</span>,<br>Không Cần Wheel</h1>
+            <p data-i18n="hero_p">Zone nổi always-on-top — click, giữ, hoặc chỉ di chuột để lăn trang.<br>
+                Hoàn hảo khi wheel hỏng, dùng một tay, hoặc muốn trải nghiệm cuộn trang mới.</p>
+
             <div class="hero-buttons">
-                <a href="#download" class="btn btn-primary">⬇ Download for Windows</a>
-                <a href="#download" class="btn btn-secondary">🌐 Chrome Extension</a>
+                <a href="#download" class="btn btn-primary" data-i18n="hero_btn_win">⬇ Tải về Windows</a>
+                <a href="#download" class="btn btn-secondary" data-i18n="hero_btn_ext">🌐 Chrome Extension</a>
+            </div>
+
+            <!-- Zone Demo -->
+            <div class="hero-demo">
+                <div class="zone-demo">
+                    <div class="zone-demo-top">▲</div>
+                    <div class="zone-demo-bot">▼</div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="hero-stats">
+                <div class="hero-stat"><strong>&lt; 500KB</strong><span>App Size</span></div>
+                <div class="hero-stat"><strong>3</strong><span>Scroll Modes</span></div>
+                <div class="hero-stat"><strong>0%</strong><span>CPU Idle</span></div>
+                <div class="hero-stat"><strong>Free</strong><span>Forever</span></div>
             </div>
         </div>
     </section>
 
-    <!-- Features -->
+    <!-- ══════════════ FEATURES ══════════════ -->
     <section class="features" id="features">
         <div class="container">
-            <h2>Why ScrollNice?</h2>
+            <div class="section-head">
+                <div class="section-tag">Features</div>
+                <h2 data-i18n="features_title">Tại sao dùng ScrollNice?</h2>
+            </div>
             <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🖱️</div>
-                    <h3>Click to Scroll</h3>
-                    <p>A floating zone that responds to your clicks. Left click up, right click down — or choose from 5
-                        modes.</p>
+                <div class="feature-card"><span class="feature-num">01</span><span class="feature-icon">🖱️</span>
+                    <h3 data-i18n="feat1_title">Click / Giữ / Di chuột</h3>
+                    <p data-i18n="feat1_p"></p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🪶</div>
-                    <h3>Lightweight</h3>
-                    <p>Under 500KB. Zero CPU when idle. No background services, no bloat, no telemetry.</p>
+                <div class="feature-card"><span class="feature-num">02</span><span class="feature-icon">🪶</span>
+                    <h3 data-i18n="feat2_title">Siêu nhẹ</h3>
+                    <p data-i18n="feat2_p"></p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3>Customizable</h3>
-                    <p>Resize, reposition, change opacity, add cover images, adjust sensitivity. Make it yours.</p>
+                <div class="feature-card"><span class="feature-num">03</span><span class="feature-icon">🎨</span>
+                    <h3 data-i18n="feat3_title">Tùy chỉnh</h3>
+                    <p data-i18n="feat3_p"></p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔊</div>
-                    <h3>Click Sounds</h3>
-                    <p>Subtle audio feedback on each click. Use built-in sounds or load your own WAV files.</p>
+                <div class="feature-card"><span class="feature-num">04</span><span class="feature-icon">🔊</span>
+                    <h3 data-i18n="feat4_title">Âm thanh click</h3>
+                    <p data-i18n="feat4_p"></p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⌨️</div>
-                    <h3>Hotkeys</h3>
-                    <p>Toggle on/off with Ctrl+Alt+S, enter edit mode with Ctrl+Alt+E. Fully configurable.</p>
+                <div class="feature-card"><span class="feature-num">05</span><span class="feature-icon">⌨️</span>
+                    <h3 data-i18n="feat5_title">Phím tắt</h3>
+                    <p data-i18n="feat5_p"></p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Wheel Block</h3>
-                    <p>Optionally block the physical mouse wheel. Perfect for broken wheels that send random scroll
-                        events.</p>
+                <div class="feature-card"><span class="feature-num">06</span><span class="feature-icon">🔒</span>
+                    <h3 data-i18n="feat6_title">Chặn Wheel</h3>
+                    <p data-i18n="feat6_p"></p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Modes -->
+    <!-- ══════════════ MODES ══════════════ -->
     <section class="modes" id="modes">
         <div class="container">
-            <h2>5 Scroll Modes</h2>
+            <div class="section-head">
+                <div class="section-tag">Scroll Modes</div>
+                <h2 data-i18n="modes_title">3 Chế Độ Lăn</h2>
+                <p data-i18n="modes_sub">Chọn chế độ phù hợp với thói quen của bạn</p>
+            </div>
             <div class="mode-grid">
-                <div class="mode-card">
-                    <div class="icon">👆</div>
-                    <h3>Click L↑ R↓</h3>
-                    <p>Left click scrolls up, right click scrolls down</p>
+                <div class="mode-card"><span class="mode-badge">Mode 1</span><span class="icon">🖱️</span>
+                    <h3 data-i18n="mode1_title">Click / Giữ</h3>
+                    <p data-i18n="mode1_p"></p>
                 </div>
-                <div class="mode-card">
-                    <div class="icon">👇</div>
-                    <h3>Click L↓ R↑</h3>
-                    <p>Reversed: left down, right up</p>
+                <div class="mode-card"><span class="mode-badge">Mode 2</span><span class="icon">▲▼</span>
+                    <h3 data-i18n="mode2_title">Chia Trên / Dưới</h3>
+                    <p data-i18n="mode2_p"></p>
                 </div>
-                <div class="mode-card">
-                    <div class="icon">◀▶</div>
-                    <h3>Split Left/Right</h3>
-                    <p>Zone splits in half. Click left = up, right = down</p>
-                </div>
-                <div class="mode-card">
-                    <div class="icon">▲▼</div>
-                    <h3>Split Top/Bottom</h3>
-                    <p>Zone splits in half. Click top = up, bottom = down</p>
-                </div>
-                <div class="mode-card">
-                    <div class="icon">⟳</div>
-                    <h3>Continuous Hold</h3>
-                    <p>Hold left = scroll up gradually, hold right = down</p>
+                <div class="mode-card"><span class="mode-badge">Mode 3</span><span class="icon">✨</span>
+                    <h3 data-i18n="mode3_title">Di Chuột Tự Động</h3>
+                    <p data-i18n="mode3_p"></p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Download -->
+    <!-- ══════════════ DOWNLOAD ══════════════ -->
     <section class="download" id="download">
         <div class="container">
-            <h2>Get ScrollNice</h2>
-            <p>Free forever. No sign-up required.</p>
+            <div class="section-head">
+                <div class="section-tag">Download</div>
+                <h2 data-i18n="download_title">Tải về ScrollNice</h2>
+            </div>
+            <p data-i18n="download_sub">Miễn phí mãi mãi. Không cần đăng ký.</p>
             <div class="dl-cards">
                 <div class="dl-card">
-                    <h3>🖥️ Windows App</h3>
-                    <p>Portable .exe — works system-wide across all apps. Under 500KB.</p>
-                    <a href="#" class="btn btn-primary" style="width:100%">Download .zip</a>
+                    <h3 data-i18n="dl_win_title">🖥️ Ứng dụng Windows</h3>
+                    <p data-i18n="dl_win_p"></p>
+                    <a href="https://github.com/anhhackta/ScrollNice/releases" class="btn btn-primary"
+                        style="width:100%;justify-content:center;" data-i18n="dl_win_btn">Tải về (.zip)</a>
                 </div>
                 <div class="dl-card">
-                    <h3>🌐 Chrome Extension</h3>
-                    <p>Browser-only version. No install needed — load as unpacked extension.</p>
-                    <a href="#" class="btn btn-secondary" style="width:100%">Get Extension</a>
+                    <h3 data-i18n="dl_ext_title">🌐 Chrome Extension</h3>
+                    <p data-i18n="dl_ext_p"></p>
+                    <a href="https://github.com/anhhackta/ScrollNice" class="btn btn-secondary"
+                        style="width:100%;justify-content:center;" data-i18n="dl_ext_btn">Xem trên GitHub</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- ══════════════ DONATION ══════════════ -->
+    <section class="donation" id="donation">
+        <div class="container">
+            <h2 data-i18n="donation_title">❤️ Ủng hộ dự án</h2>
+            <p data-i18n="donation_sub"></p>
+            <div class="donation-cards">
+                <a class="donation-card kofi" href="https://ko-fi.com/hoang2k2" target="_blank" rel="noopener">
+                    <span class="donation-icon">☕</span>
+                    <div>
+                        <div style="font-weight:700;" data-i18n="donation_kofi">Ko-fi</div>
+                        <div style="font-size:12px;opacity:.55;font-weight:400;">ko-fi.com/hoang2k2</div>
+                    </div>
+                </a>
+                <a class="donation-card paypal" href="https://paypal.me/bahoang2k2" target="_blank" rel="noopener">
+                    <span class="donation-icon">💳</span>
+                    <div>
+                        <div style="font-weight:700;" data-i18n="donation_paypal">PayPal</div>
+                        <div style="font-size:12px;opacity:.55;font-weight:400;">paypal.me/bahoang2k2</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════ SUPPORTERS MARQUEE ══════════════ -->
+    <section class="supporters">
+        <div class="supporters-label" data-i18n="supporters_label">🤝 Đồng hành cùng dự án</div>
+        <div class="marquee-wrap">
+            <div class="marquee-track" id="marquee-track">
+                <!-- Items x2 for seamless loop -->
+                <div class="marquee-item"><span class="avatar">BA</span> Briar Angry <span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">AG</span> Antigravity <span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">SN</span> ScrollNice Community <span class="dot"></span>
+                </div>
+                <div class="marquee-item"><span class="avatar">❤</span> Bạn (You!) <span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">🇻🇳</span> Made in Vietnam <span class="dot"></span>
+                </div>
+                <!-- Duplicate for infinite scroll -->
+                <div class="marquee-item"><span class="avatar">BA</span> Briar Angry <span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">AG</span> Antigravity <span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">SN</span> ScrollNice Community <span class="dot"></span>
+                </div>
+                <div class="marquee-item"><span class="avatar">❤</span> Bạn (You!) <span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">🇻🇳</span> Made in Vietnam <span class="dot"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════ FOOTER ══════════════ -->
     <footer class="footer">
         <div class="container">
-            <p>ScrollNice — Made with ❤️ | <a href="https://github.com/anhhackta/ScrollNice">GitHub</a> | No telemetry.
-                No ads. 100% free.</p>
+            <p data-i18n="footer_text">ScrollNice — Made with ❤️ |
+                <a href="https://github.com/anhhackta/ScrollNice">GitHub</a> |
+                Không telemetry · Không quảng cáo · 100% miễn phí
+            </p>
         </div>
     </footer>
 
+    <script src="js/i18n.js"></script>
     <script src="js/main.js"></script>
 </body>
 

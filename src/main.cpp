@@ -1,4 +1,4 @@
-// ScrollNice — main application entry point (v2: click-to-scroll)
+// ScrollNice — main application entry point (v2.1: 3-mode redesign)
 #include <windows.h>
 #include <commctrl.h>
 #include <mmsystem.h>
@@ -33,18 +33,26 @@ static sn::WinSettings    g_settingsDlg;
 static std::string g_configPath;
 static HINSTANCE   g_hInstance = nullptr;
 
-// Continuous scroll state
-static UINT_PTR g_continuousTimer = 0;
-static const UINT_PTR TIMER_ID_CONTINUOUS = 200;
-static int  g_continuousDirection = 0;
+// Continuous/hold scroll state
+static UINT_PTR g_holdTimer = 0;          // timer for hold & hover scroll
+static const UINT_PTR TIMER_ID_HOLD = 201;
+static int  g_holdDirection = 0;           // 1=up, -1=down, 0=none
 static DWORD g_holdStartTime = 0;
 static bool g_leftHeld = false;
 static bool g_rightHeld = false;
 
+// Hover scroll state (Mode 3)
+static UINT_PTR g_hoverTimer = 0;
+static const UINT_PTR TIMER_ID_HOVER = 202;
+static int  g_hoverDirection = 0;
+
 // ─────────── Forward declarations ───────────
 static void HandleZoneClick(int button, bool isDown, POINT clickPos, int zoneW, int zoneH);
-static void StartContinuousScroll(int direction);
-static void StopContinuousScroll();
+static void HandleZoneHover(POINT clientPos, int zoneW, int zoneH);
+static void StartHoldScroll(int direction);
+static void StopHoldScroll();
+static void StartHoverScroll(int direction);
+static void StopHoverScroll();
 static void PlayClickSound();
 static void ApplyConfig();
 static void OpenSettings();
@@ -61,14 +69,19 @@ static LRESULT CALLBACK MsgWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         g_hotkeys.HandleMessage(wParam);
         return 0;
 
-    case WM_TIMER:
-        if (wParam == TIMER_ID_CONTINUOUS) {
-            auto& cfg = g_configStore.Get();
+    case WM_TIMER: {
+        auto& cfg = g_configStore.Get();
+        if (wParam == TIMER_ID_HOLD && g_holdDirection != 0) {
             double holdSec = (GetTickCount() - g_holdStartTime) / 1000.0;
-            g_scrollEngine.ContinuousScrollTick(g_continuousDirection,
+            g_scrollEngine.ContinuousScrollTick(g_holdDirection,
                 cfg.scroll.continuous_speed, cfg.scroll.continuous_accel, holdSec);
         }
+        if (wParam == TIMER_ID_HOVER && g_hoverDirection != 0) {
+            g_scrollEngine.ContinuousScrollTick(g_hoverDirection,
+                cfg.scroll.hover_speed, 1, 0.5);
+        }
         return 0;
+    }
 
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
@@ -114,82 +127,105 @@ static void OnZoneEvent(const sn::ZoneEventData& e) {
     case sn::ZoneEvent::RightClickUp:
         HandleZoneClick(1, false, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
+    case sn::ZoneEvent::HoverMove:
+        HandleZoneHover(e.clickPos, e.zoneWidth, e.zoneHeight);
+        break;
+    case sn::ZoneEvent::HoverLeave:
+        StopHoverScroll();
+        break;
     default:
         break;
     }
 }
 
-// ─────────── Click handling logic ───────────
+// ─────────── 3-Mode click/hold logic ───────────
 static void HandleZoneClick(int button, bool isDown, POINT clickPos, int zoneW, int zoneH) {
     auto& cfg = g_configStore.Get();
     sn::ScrollMode mode = sn::ScrollModeFromString(cfg.scroll.mode);
 
-    if (mode == sn::ScrollMode::Continuous) {
-        // Hold-to-scroll
-        if (isDown) {
-            int dir = (button == 0) ? 1 : -1; // left=up, right=down
-            g_continuousDirection = dir;
-            g_holdStartTime = GetTickCount();
-            if (button == 0) g_leftHeld = true; else g_rightHeld = true;
-            StartContinuousScroll(dir);
-            PlayClickSound();
-        } else {
-            if (button == 0) g_leftHeld = false; else g_rightHeld = false;
-            if (!g_leftHeld && !g_rightHeld) StopContinuousScroll();
+    // Mode 3 (HoverAuto): click has no effect
+    if (mode == sn::ScrollMode::HoverAuto) return;
+
+    if (isDown) {
+        int direction = 0;
+
+        if (mode == sn::ScrollMode::ClickHold) {
+            // Mode 1: L-button=up, R-button=down (for both click and hold)
+            direction = (button == 0) ? 1 : -1;
+        } else if (mode == sn::ScrollMode::SplitHold) {
+            // Mode 2: Top half=up, Bottom half=down (for both click and hold)
+            direction = (clickPos.y < zoneH / 2) ? 1 : -1;
         }
-        return;
-    }
 
-    // Click-based modes: scroll on mousedown
-    if (!isDown) return;
+        if (direction != 0) {
+            // Immediate single-click scroll
+            g_scrollEngine.ClickScroll(direction, cfg.scroll.scroll_amount);
+            PlayClickSound();
 
-    int direction = 0; // 1=up, -1=down
-
-    switch (mode) {
-    case sn::ScrollMode::ClickLR:
-        direction = (button == 0) ? 1 : -1;
-        break;
-    case sn::ScrollMode::ClickRL:
-        direction = (button == 0) ? -1 : 1;
-        break;
-    case sn::ScrollMode::SplitTB:
-        direction = (clickPos.y < zoneH / 2) ? 1 : -1;
-        break;
-    case sn::ScrollMode::SplitLR:
-        direction = (clickPos.x < zoneW / 2) ? 1 : -1;
-        break;
-    default:
-        break;
-    }
-
-    if (direction != 0) {
-        g_scrollEngine.ClickScroll(direction, cfg.scroll.scroll_amount);
-        PlayClickSound();
+            // Start hold timer for continuous scroll while button held
+            if (button == 0) g_leftHeld = true; else g_rightHeld = true;
+            g_holdStartTime = GetTickCount() + 300; // 300ms delay before continuous starts
+            StartHoldScroll(direction);
+        }
+    } else {
+        // Button released
+        if (button == 0) g_leftHeld = false; else g_rightHeld = false;
+        if (!g_leftHeld && !g_rightHeld) {
+            StopHoldScroll();
+        }
     }
 }
 
-// ─────────── Helpers ───────────
-static void StartContinuousScroll(int direction) {
-    g_continuousDirection = direction;
+// ─────────── Mode 3: Hover logic ───────────
+static void HandleZoneHover(POINT clientPos, int zoneW, int zoneH) {
+    auto& cfg = g_configStore.Get();
+    if (sn::ScrollModeFromString(cfg.scroll.mode) != sn::ScrollMode::HoverAuto) return;
+
+    int newDir = (clientPos.y < zoneH / 2) ? 1 : -1;
+    if (newDir != g_hoverDirection) {
+        g_hoverDirection = newDir;
+        if (newDir != 0) {
+            StartHoverScroll(newDir);
+        }
+    }
+}
+
+// ─────────── Hold & Hover timers ───────────
+static void StartHoldScroll(int direction) {
+    g_holdDirection = direction;
     g_scrollEngine.Reset();
-    if (!g_continuousTimer && g_msgWnd)
-        g_continuousTimer = SetTimer(g_msgWnd, TIMER_ID_CONTINUOUS, 16, nullptr);
+    if (!g_holdTimer && g_msgWnd)
+        g_holdTimer = SetTimer(g_msgWnd, TIMER_ID_HOLD, 16, nullptr);
 }
 
-static void StopContinuousScroll() {
-    if (g_continuousTimer && g_msgWnd) {
-        KillTimer(g_msgWnd, TIMER_ID_CONTINUOUS);
-        g_continuousTimer = 0;
+static void StopHoldScroll() {
+    if (g_holdTimer && g_msgWnd) {
+        KillTimer(g_msgWnd, TIMER_ID_HOLD);
+        g_holdTimer = 0;
     }
+    g_holdDirection = 0;
     g_scrollEngine.Reset();
 }
 
+static void StartHoverScroll(int direction) {
+    g_hoverDirection = direction;
+    if (!g_hoverTimer && g_msgWnd)
+        g_hoverTimer = SetTimer(g_msgWnd, TIMER_ID_HOVER, 16, nullptr);
+}
+
+static void StopHoverScroll() {
+    if (g_hoverTimer && g_msgWnd) {
+        KillTimer(g_msgWnd, TIMER_ID_HOVER);
+        g_hoverTimer = 0;
+    }
+    g_hoverDirection = 0;
+}
+
+// ─────────── Sound ───────────
 static void PlayClickSound() {
     auto& cfg = g_configStore.Get();
     if (!cfg.sound.enabled) return;
-
     if (cfg.sound.click_sound.empty()) {
-        // Built-in system sound
         MessageBeep(0xFFFFFFFF);
     } else {
         std::wstring wp(cfg.sound.click_sound.begin(), cfg.sound.click_sound.end());
@@ -213,8 +249,7 @@ static void ApplyConfig() {
 
 static void OpenSettings() {
     auto& cfg = g_configStore.Get();
-
-    // Save current zone position (may have been dragged)
+    // Sync current zone position back to config
     cfg.zone.x = g_overlay.Config().x;
     cfg.zone.y = g_overlay.Config().y;
     cfg.zone.width = g_overlay.Config().width;
@@ -223,6 +258,8 @@ static void OpenSettings() {
     g_settingsDlg.Show(g_hInstance, g_msgWnd, cfg, [](const sn::AppConfig& newCfg) {
         g_configStore.Get() = newCfg;
         g_configStore.Save(g_configPath);
+        StopHoldScroll();
+        StopHoverScroll();
         ApplyConfig();
     });
 }
@@ -251,19 +288,18 @@ static std::string GetConfigPath() {
     return p.string();
 }
 
-// ─────────── Mouse hook for wheel blocking ───────────
-static bool OnMouseEvent(POINT pt, DWORD mouseMsg, MSLLHOOKSTRUCT* /*data*/) {
+// ─────────── Mouse hook (wheel block) ───────────
+static bool OnMouseEvent(POINT, DWORD mouseMsg, MSLLHOOKSTRUCT*) {
     if (mouseMsg == WM_MOUSEWHEEL || mouseMsg == WM_MOUSEHWHEEL) {
         if (g_configStore.Get().wheel_block) {
-            // Bypass when Alt held
             if (GetAsyncKeyState(VK_MENU) & 0x8000) return false;
-            return true; // block wheel
+            return true;
         }
     }
     return false;
 }
 
-// ─────────── Hotkey handler ───────────
+// ─────────── Hotkeys ───────────
 static void OnHotkey(int id) {
     switch (id) {
     case sn::WinHotkeys::HK_TOGGLE_ENABLED:
@@ -287,25 +323,22 @@ static void OnHotkey(int id) {
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     g_hInstance = hInstance;
 
-    // Single instance
     HANDLE hMutex = CreateMutexW(nullptr, TRUE, L"ScrollNice_SingleInstance");
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         MessageBoxW(nullptr, L"ScrollNice is already running.", L"ScrollNice", MB_OK | MB_ICONINFORMATION);
         return 0;
     }
 
-    // Init common controls for settings dialog
     INITCOMMONCONTROLSEX icc = {sizeof(icc), ICC_BAR_CLASSES | ICC_STANDARD_CLASSES};
     InitCommonControlsEx(&icc);
 
-    // 1) Load config
     g_configPath = GetConfigPath();
     if (!g_configStore.Load(g_configPath)) {
         g_configStore.Save(g_configPath);
     }
     auto& cfg = g_configStore.Get();
 
-    // 2) Create hidden message window
+    // Message window
     WNDCLASSEXW wc = {};
     wc.cbSize        = sizeof(wc);
     wc.lpfnWndProc   = MsgWndProc;
@@ -315,33 +348,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     g_msgWnd = CreateWindowExW(0, kMsgWindowClass, L"ScrollNice_Msg",
         0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, hInstance, nullptr);
 
-    // 3) Init modules
+    // Init core
     g_zoneManager.LoadFromConfig(cfg.zone);
     g_stateMachine.SetEnabled(cfg.enabled);
 
-    // 4) Create zone overlay window
+    // Create zone overlay window
     g_overlay.Create(hInstance, cfg.zone, OnZoneEvent);
     g_overlay.SetScrollMode(sn::ScrollModeFromString(cfg.scroll.mode));
+    if (!cfg.enabled) g_overlay.Hide();
 
-    // 5) Tray icon
+    // Tray icon
     g_tray.Create(g_msgWnd, hInstance, [](sn::WinTray::MenuItem item) {
         if (g_msgWnd) PostMessage(g_msgWnd, WM_COMMAND, MAKEWPARAM(item, 0), 0);
     });
 
-    // 6) Hotkeys
+    // Hotkeys
     g_hotkeys.Register(g_msgWnd,
         cfg.hotkeys.toggle_enabled,
         cfg.hotkeys.toggle_edit,
-        "", // no zone toggle needed
+        "",
         cfg.hotkeys.toggle_wheel,
         OnHotkey);
 
-    // 7) Mouse hook (for wheel blocking)
+    // Wheel block hook
     if (cfg.wheel_block) {
         sn::WinMouseHook::Instance().Install(OnMouseEvent);
     }
 
-    // 8) Message loop
+    // Message loop
     MSG msg;
     while (GetMessage(&msg, nullptr, 0, 0)) {
         TranslateMessage(&msg);
@@ -349,13 +383,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     }
 
     // Cleanup
-    StopContinuousScroll();
+    StopHoldScroll();
+    StopHoverScroll();
     sn::WinMouseHook::Instance().Uninstall();
     g_hotkeys.Unregister(g_msgWnd);
     g_tray.Destroy();
-    g_overlay.Destroy();
 
-    // Save zone position on exit
+    // Save zone position
     auto& exitCfg = g_configStore.Get();
     exitCfg.zone.x = g_overlay.Config().x;
     exitCfg.zone.y = g_overlay.Config().y;
@@ -363,6 +397,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     exitCfg.zone.height = g_overlay.Config().height;
     g_configStore.Save(g_configPath);
 
+    g_overlay.Destroy();
     DestroyWindow(g_msgWnd);
     ReleaseMutex(hMutex);
     CloseHandle(hMutex);
