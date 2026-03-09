@@ -85,9 +85,9 @@ async function detectLanguage() {
     const saved = localStorage.getItem('sn_lang');
     if (saved && TRANSLATIONS[saved]) return saved;
     try {
-        const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+        const res = await fetch('https://ip-api.com/json/?fields=countryCode', { signal: AbortSignal.timeout(3000) });
         const data = await res.json();
-        return data.country_code === 'VN' ? 'vi' : 'en';
+        return data.countryCode === 'VN' ? 'vi' : 'en';
     } catch {
         return navigator.language?.startsWith('vi') ? 'vi' : 'en';
     }

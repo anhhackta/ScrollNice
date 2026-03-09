@@ -1,0 +1,301 @@
+# ScrollNiceDoc — Tài liệu Quá trình Phát triển / Development Process Document
+
+> Tài liệu này ghi lại toàn bộ quá trình hình thành, thiết kế, và phát triển ứng dụng ScrollNice từ ý tưởng ban đầu đến phiên bản hiện tại.
+> This document records the full development journey of ScrollNice — from initial idea to current release.
+
+---
+
+## I. Nguồn gốc ý tưởng / Origin Story
+
+### Vấn đề ban đầu (The Problem)
+
+ScrollNice ra đời từ một nhu cầu thực tế đơn giản: **bánh lăn chuột bị hỏng**.  
+Khi bánh lăn chuột không hoạt động hoặc hoạt động kém, việc cuộn trang trở thành rào cản lớn trong công việc hàng ngày — từ lướt web, đọc tài liệu, đến làm việc với IDE hay file manager.
+
+Các giải pháp hiện có:
+- Dùng bàn phím (Page Up/Down): nhanh nhưng không mượt
+- Trackpad: không phải ai cũng có, cảm giác khác hẳn
+- Thay chuột: tốn kém, không giải quyết ngay
+
+**Ý tưởng:** Tạo một "vùng" nổi trên màn hình, khi tương tác với vùng đó (click, giữ, hoặc di chuột) thì cuộn trang — không cần bánh lăn.
+
+---
+
+## II. Giai đoạn Prototype / Prototype Phase
+
+### Phase 0 — Chrome Extension (FeelClick)
+
+Trước khi viết ứng dụng Windows native, một **Chrome Extension tên FeelClick** được tạo để:
+- Validate ý tưởng UX nhanh chóng
+- Kiểm tra chế độ motion (di chuột → cuộn) và click-step trong môi trường web
+- Thu thập phản hồi ban đầu về cảm giác cuộn
+
+**Kiến trúc extension (MV3):**
+```
+content.js     → inject zone overlay vào trang, xử lý pointer events
+popup.html/js  → giao diện bật/tắt, chọn preset
+service_worker → lưu settings (chrome.storage), xử lý commands
+```
+
+Extension chứng minh được concept hoạt động: người dùng có thể cuộn mượt trong web mà không cần wheel.
+
+**Hạn chế của extension:**
+- Chỉ hoạt động trong tab Chrome
+- Không hỗ trợ Windows Explorer, IDE, apps system-wide
+- Cần load unpacked (chưa publish Chrome Web Store)
+
+→ Điều này xác nhận nhu cầu cho một **ứng dụng Windows native**.
+
+---
+
+## III. Thiết kế Kiến trúc / Architecture Design
+
+### Quyết định kỹ thuật cốt lõi
+
+| Quyết định | Lựa chọn | Lý do |
+|-----------|----------|-------|
+| Ngôn ngữ | C++17 | Hiệu năng cao, native Windows, không runtime overhead |
+| Build system | CMake | Cross-compiler, chuẩn mực, CI-friendly |
+| Mouse hook | `WH_MOUSE_LL` | Global hook không inject DLL, portable, lightweight |
+| Scroll injection | `SendInput()` | API Windows chuẩn, hoạt động với hầu hết ứng dụng |
+| Overlay | Layered Window (`WS_EX_LAYERED`) | Alpha support, click-through khi cần |
+| Config | JSON | Human-readable, dễ chỉnh sửa tay |
+
+### Tại sao WH_MOUSE_LL?
+- Không inject DLL vào process khác → an toàn hơn
+- Hoạt động global trên toàn hệ thống
+- Chi phí khi idle cực thấp (callback chỉ chạy khi có mouse event)
+- Không cần quyền admin
+
+### Overlay Window Strategy
+```
+Normal mode:   WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOPMOST
+               → Click-through, always-on-top, có alpha
+Edit mode:     Tắt WS_EX_TRANSPARENT → nhận click để drag/resize
+               → Hiển thị handle resize rõ ràng
+```
+
+---
+
+## IV. Các Module Chính / Core Modules
+
+### ZoneManager
+- Load và quản lý danh sách zone từ config
+- Hit-test O(1): kiểm tra cursor position với rect của từng zone
+- Hỗ trợ zone type: `edge` (bám cạnh màn hình) và `floating` (tự do)
+- Multi-monitor: dùng `EnumDisplayMonitors`, zone gắn theo monitor index
+
+### ScrollEngine — Thuật toán cuộn
+Đây là module quan trọng nhất, quyết định "cảm giác" cuộn:
+
+```
+1. Input: dy = y_now - y_prev (delta-based, not center-based)
+2. Dead zone: if |dy| < dead_zone_px → skip (tránh micro-jitter)
+3. Exponential smoothing: v = lerp(v_prev, dy × sensitivity, 1 - smoothing)
+4. Acceleration: v_acc = sign(v) × |v|^accel_power
+5. Accumulator: accum += v_acc × dt
+6. Emission: while |accum| >= step → SendInput(WHEEL ±120)
+7. Throttle: max_events_per_sec limiter
+```
+
+**Tại sao delta-based thay vì center-based?**
+- Center-based: `dy = y - zone_center` → đứng yên vẫn có dy nếu không đúng tâm
+- Delta-based: chỉ có dy khi thực sự di chuyển → tự nhiên hơn, ít jitter hơn
+
+### StateMachine
+```
+Disabled ←──────────────────→ Idle (hotkey Ctrl+Alt+S)
+                                │
+                          enter zone
+                                ↓
+                              Hover (chờ dead_zone)
+                                │
+                         move > threshold
+                                ↓
+                             Active (phát wheel events)
+                                │
+                          leave zone
+                                ↓
+                              Idle
+```
+Bất kỳ trạng thái nào → Edit: hotkey Ctrl+Alt+E
+
+---
+
+## V. Ba Chế độ Lăn / Three Scroll Modes
+
+### Mode 1: Click / Giữ
+**Thiết kế:** Phù hợp với người quen click chuột truyền thống.
+- Trái click = lên ↑, Phải click = xuống ↓
+- Giữ chuột → scroll liên tục với gia tốc tăng dần
+- Cảm giác trực quan nhất, gần với thao tác click scroll-bar
+
+**Implementation:** Mouse hook bắt `WM_LBUTTONDOWN`, `WM_RBUTTONDOWN`. Khi giữ, timer phát wheel theo `tick_ms` với velocity tăng dần theo thời gian giữ.
+
+### Mode 2: Chia vùng Trên/Dưới (Top-Bottom Split)
+**Thiết kế:** Phù hợp với đọc tài liệu, không cần phân biệt click trái/phải.
+- Zone bị chia theo đường ngang ở giữa
+- Tương tác phần trên → lên, phần dưới → xuống
+- Click và giữ đều hoạt động
+
+**Implementation:** Hit-test phụ tính theo `y < zone_center_y`. Click/hold xử lý tương tự Mode 1.
+
+### Mode 3: Di chuột Tự động (Hover Auto-Scroll)
+**Thiết kế:** Đặc biệt nhất — không cần click, chỉ cần để chuột trong zone.
+- Phù hợp cho đọc dài, một tay bận việc khác
+- Di chuột vào nửa trên → tự lăn lên (không cần làm gì thêm)
+- Di chuột vào nửa dưới → tự lăn xuống
+- Ra khỏi zone → dừng ngay
+
+**Implementation:** Dùng delta của `y - zone_center_y` làm velocity. Không cần button event. Timer luôn chạy khi cursor trong zone. Velocity = 0 khi cursor gần giữa (dead zone).
+
+---
+
+## VI. Wheel Blocking (Chặn bánh lăn vật lý)
+
+Tính năng tùy chọn cho người dùng có bánh lăn bị hỏng hoàn toàn (gửi scroll event ngẫu nhiên):
+
+```
+wheel_block_mode:
+  "off"               → Không chặn (mặc định)
+  "global"            → Chặn tất cả WM_MOUSEWHEEL toàn hệ thống
+  "outside_zone_only" → Chặn ngoài zone (cho phép wheel trong zone)
+  "inside_zone_only"  → Ngược lại
+```
+
+**Implementation:** Trong `WH_MOUSE_LL` callback, nếu event là `WM_MOUSEWHEEL` và rule match → return 1 để chặn (không truyền lên chain).
+
+**Safety features:**
+- `bypass_modifier`: giữ Alt để wheel vẫn hoạt động dù đang chặn
+- Panic key `Ctrl+Alt+S` tắt toàn app ngay
+
+---
+
+## VII. Chrome Extension — FeelClick
+
+### Kiến trúc (Manifest V3)
+```
+manifest.json          → permissions, commands, service worker
+content.js             → inject zone div vào page, handle pointer events
+popup.html + popup.js  → UI bật/tắt, chọn mode, preset
+service_worker.js      → sync settings, respond to keyboard commands
+```
+
+### Khác biệt với Windows App
+
+| Khía cạnh | Windows App | Chrome Extension |
+|-----------|-------------|-----------------|
+| Phạm vi | Toàn hệ thống | Chỉ trong tab Chrome |
+| Scroll mechanism | `SendInput(WHEEL)` | `window.scrollBy()` |
+| Zone overlay | Win32 Layered Window | `div` absolute position |
+| Config | `config.json` | `chrome.storage.sync` |
+| Kích hoạt | Sau khi cài | Load unpacked |
+
+---
+
+## VIII. Website / Documentation Site
+
+### Tech Stack
+- **Static HTML/CSS/JS** (không framework) — hosted trên GitHub Pages
+- **i18n:** Auto-detect IP (ip-api.com) → VI cho VN, EN cho quốc gia khác
+- **Design:** Dark Mode mặc định, Light Mode toggle, glassmorphism
+- **Font:** Space Grotesk + Inter (Google Fonts)
+- **Icons:** Phosphor Icons (CDN)
+- **Flags:** flagcdn.com (real flag images, không dùng emoji — Windows không render flag emoji)
+
+### Các trang
+```
+docs/
+├── index.html          → Landing page (hero, features, modes, download, donation)
+├── changelog.html      → Lịch sử thay đổi
+├── favicon.svg         → Favicon
+└── docs/               → Documentation sub-pages
+    ├── index.html      → Overview
+    ├── install.html    → Cài đặt
+    ├── quickstart.html → Bắt đầu nhanh
+    ├── modes.html      → Chi tiết 3 chế độ
+    ├── settings.html   → Tham chiếu cài đặt
+    ├── troubleshoot.html → Xử lý lỗi
+    └── privacy.html    → Quyền riêng tư
+```
+
+### Design decisions nổi bật
+- **Orbit rings SVG** ở hero section: lấy cảm hứng từ trống đồng Đông Sơn (unikorn.vn)
+  - 16-ray star/sun ở trung tâm
+  - 6 vành đồng tâm với chấm tròn và hình chim đơn giản hóa
+  - Opacity 0.07 — tinh tế, không lấn át nội dung
+- **Supporters marquee** (unikorn-style): 2 div song song animate -100%, mask-image fade 2 đầu
+- **Footer 4 cột:** Brand · Tài nguyên · Dự án · Ủng hộ
+
+---
+
+## IX. Vấn đề đã gặp & Giải pháp / Issues & Solutions
+
+| Vấn đề | Nguyên nhân | Giải pháp |
+|--------|-------------|-----------|
+| Flag emoji không hiển thị trên Windows | Windows không render country flag emoji trong Chrome | Dùng `flagcdn.com` PNG images |
+| Language detection sai | `ipapi.co` → đổi sang `ip-api.com` nhưng field name khác (`countryCode` vs `country_code`) | Chuẩn hóa về `ip-api.com/json/?fields=countryCode` |
+| Marquee có khoảng trắng khi lặp | Dùng 1 track animate `-50%` nhưng items quá ít | Đổi sang 2 track riêng animate `-100%` (flex row) |
+| Nav controls nằm ngoài container docs pages | PowerShell patch vô tình đặt controls sau `</div>` đóng container | Rewrite hoàn toàn nav block bằng PS regex |
+| Canvas particles chạy song song SVG orbit | Không remove canvas code khi thêm SVG | Refactor main.js, bỏ `initParticles()` |
+| Scroll progress gây jank | `scroll` event không throttle | Thêm `requestAnimationFrame` + `ticking` flag |
+
+---
+
+## X. Giới hạn đã biết / Known Limitations
+
+1. **Raw input games:** Một số game dùng raw input bỏ qua `SendInput` wheel → không hoạt động trong game
+2. **UWP apps (Windows Store):** Một số UWP app có thể không nhận `SendInput` wheel
+3. **Elevated processes:** Scroll vào process chạy với quyền admin đòi hỏi ScrollNice cũng chạy elevated
+4. **Chrome Extension:** Chỉ hoạt động trong tab (không hỗ trợ PDF viewer nội bộ Chrome)
+5. **Multi-monitor DPI scaling:** Có thể có offset nhỏ ở DPI khác nhau giữa các monitor
+
+---
+
+## XI. Lộ trình / Roadmap
+
+### Đã hoàn thành ✅
+- [x] Chrome Extension prototype (FeelClick)
+- [x] Windows app với 3 scroll modes
+- [x] Wheel blocking (4 modes)
+- [x] Hotkeys tùy chỉnh
+- [x] Zone edit mode (resize/drag)
+- [x] Config JSON portable
+- [x] Website bilingual (VI/EN) với IP auto-detect
+- [x] Dark/Light theme toggle
+
+### Đang phát triển 🚧
+- [ ] Settings UI trong app (thay vì chỉnh config.json)
+- [ ] Click sound customization (WAV file)
+- [ ] Zone cover image (ảnh bìa)
+- [ ] Installer (Inno Setup/NSIS)
+
+### Tương lai 🔮
+- [ ] Multi-zone preset profiles
+- [ ] Chrome Web Store publish (FeelClick)
+- [ ] Auto-suspend smart (game detection)
+- [ ] Smooth velocity curve (bezier)
+- [ ] Port macOS / Linux (Wayland)
+
+---
+
+## XII. Người đóng góp / Contributors
+
+| Tên | Vai trò |
+|-----|---------|
+| **HoàngX** | Tác giả, developer chính |
+| **Briar Angry** | Đồng hành, support |
+| **Antigravity** | AI pair-programmer, website dev |
+| ScrollNice Community | Phản hồi, testing |
+
+---
+
+## XIII. License
+
+MIT License — Tự do sử dụng, chỉnh sửa, phân phối.  
+Vui lòng giữ credit khi fork/redistribute.
+
+---
+
+*Tài liệu này được cập nhật liên tục theo sự phát triển của dự án.*  
+*Last updated: March 2026*

@@ -1,21 +1,32 @@
 /* ═══════════════════════════════════════════════════════
-   ScrollNice — Premium Interactions v2
+   ScrollNice — main.js v3
+   Removed canvas particles (orbit SVG handles ambient visuals).
+   Added RAF-throttled scroll listener for progress bar + nav.
    ═══════════════════════════════════════════════════════ */
 
-/* ── Scroll Progress Bar ── */
+/* ── Scroll Progress Bar + Nav (RAF-throttled) ── */
 const progressBar = document.getElementById('scroll-progress');
-const updateProgress = () => {
-    if (!progressBar) return;
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    progressBar.style.width = `${(window.scrollY / max) * 100}%`;
-};
-
-/* ── Nav Scroll-Aware ── */
 const nav = document.querySelector('.nav');
-const updateNav = () => {
-    if (!nav) return;
-    nav.classList.toggle('scrolled', window.scrollY > 50);
-};
+let ticking = false;
+
+function onScroll() {
+    if (!ticking) {
+        requestAnimationFrame(() => {
+            // Progress bar
+            if (progressBar) {
+                const max = document.documentElement.scrollHeight - window.innerHeight;
+                progressBar.style.width = max > 0 ? `${(window.scrollY / max) * 100}%` : '0%';
+            }
+            // Scroll-aware nav
+            if (nav) nav.classList.toggle('scrolled', window.scrollY > 50);
+            ticking = false;
+        });
+        ticking = true;
+    }
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll(); // init
 
 /* ── Mobile Hamburger ── */
 function initHamburger() {
@@ -29,7 +40,6 @@ function initHamburger() {
         ham.setAttribute('aria-expanded', open);
     });
 
-    // Close on link click
     mobileMenu.querySelectorAll('a').forEach(a => {
         a.addEventListener('click', () => {
             mobileMenu.classList.remove('open');
@@ -38,89 +48,8 @@ function initHamburger() {
     });
 }
 
-/* ── Canvas Hero Particles ── */
-function initParticles() {
-    const canvas = document.getElementById('hero-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    let W = 0, H = 0, particles = [];
-
-    const resize = () => {
-        W = canvas.width = canvas.offsetWidth;
-        H = canvas.height = canvas.offsetHeight;
-    };
-
-    class Particle {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * W;
-            this.y = Math.random() * H;
-            this.r = Math.random() * 1.6 + 0.4;
-            this.vx = (Math.random() - .5) * .3;
-            this.vy = (Math.random() - .5) * .3;
-            this.a = Math.random() * .5 + .1;
-            this.color = Math.random() > .5
-                ? `rgba(59,130,246,${this.a})`
-                : `rgba(139,92,246,${this.a})`;
-        }
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
-            ctx.fill();
-        }
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
-        }
-    }
-
-    const COUNT = Math.min(60, Math.floor(W * H / 14000));
-    particles = Array.from({ length: COUNT }, () => new Particle());
-
-    let raf;
-    const animate = () => {
-        ctx.clearRect(0, 0, W, H);
-        // draw connection lines
-        for (let i = 0; i < particles.length; i++) {
-            for (let j = i + 1; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 110) {
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.strokeStyle = `rgba(99,102,241,${.12 * (1 - dist / 110)})`;
-                    ctx.lineWidth = .8;
-                    ctx.stroke();
-                }
-            }
-            particles[i].draw();
-            particles[i].update();
-        }
-        raf = requestAnimationFrame(animate);
-    };
-
-    resize();
-    window.addEventListener('resize', () => { resize(); particles.forEach(p => p.reset()); });
-    animate();
-
-    // Pause when off-screen
-    const heroObs = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting) { if (!raf) animate(); }
-        else { cancelAnimationFrame(raf); raf = null; }
-    });
-    heroObs.observe(canvas);
-}
-
 /* ── Staggered Scroll Reveal ── */
 function initReveal() {
-    const cards = document.querySelectorAll('.feature-card, .mode-card, .dl-card, .donation-card, .hero-demo, .hero-stats');
-
-    // Add stagger classes to groups
     document.querySelectorAll('.feature-grid, .mode-grid, .dl-cards, .donation-cards').forEach(grid => {
         [...grid.children].forEach((child, i) => {
             child.classList.add('reveal', `stagger-${i + 1}`);
@@ -148,15 +77,11 @@ function initTilt() {
     document.querySelectorAll('.mode-card').forEach(card => {
         card.addEventListener('mousemove', e => {
             const rect = card.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const dx = (e.clientX - cx) / (rect.width / 2);
-            const dy = (e.clientY - cy) / (rect.height / 2);
+            const dx = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+            const dy = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
             card.style.transform = `perspective(600px) rotateY(${dx * 6}deg) rotateX(${-dy * 6}deg) translateY(-6px)`;
         });
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-        });
+        card.addEventListener('mouseleave', () => { card.style.transform = ''; });
     });
 }
 
@@ -169,16 +94,8 @@ function initZoneDemo() {
     let phase = 0;
     setInterval(() => {
         phase = (phase + 1) % 3;
-        if (phase === 0) {
-            top.style.background = 'rgba(59,130,246,.25)';
-            bot.style.background = 'transparent';
-        } else if (phase === 1) {
-            top.style.background = 'transparent';
-            bot.style.background = 'rgba(139,92,246,.25)';
-        } else {
-            top.style.background = 'transparent';
-            bot.style.background = 'transparent';
-        }
+        top.style.background = phase === 0 ? 'rgba(59,130,246,.25)' : 'transparent';
+        bot.style.background = phase === 1 ? 'rgba(139,92,246,.25)' : 'transparent';
     }, 1200);
 }
 
@@ -198,18 +115,8 @@ function initSmoothScroll() {
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
     initHamburger();
-    initParticles();
     initReveal();
     initTilt();
     initZoneDemo();
     initSmoothScroll();
 });
-
-window.addEventListener('scroll', () => {
-    updateProgress();
-    updateNav();
-}, { passive: true });
-
-// Initial call
-updateNav();
-updateProgress();
