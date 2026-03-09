@@ -48,7 +48,12 @@ function applyDocsLang(lang) {
     });
     // Update dropdown triggers
     const meta = LANG_META[lang];
-    document.querySelectorAll('.lang-trigger-flag').forEach(el => { el.textContent = meta.flag; });
+    const flagCode = lang === 'vi' ? 'vn' : 'us';
+    const flagSrc = `https://flagcdn.com/18x13/${flagCode}.png`;
+    document.querySelectorAll('.lang-trigger-flag').forEach(el => {
+        if (el.tagName === 'IMG') { el.src = flagSrc; el.alt = meta.label; }
+        else el.textContent = meta.label;
+    });
     document.querySelectorAll('.lang-trigger-label').forEach(el => { el.textContent = meta.label; });
     document.querySelectorAll('.lang-option').forEach(opt => {
         const active = opt.dataset.lang === lang;

@@ -7,29 +7,23 @@
     <title>ScrollNice — Lăn Chuột Bằng Click / Scroll by Clicking</title>
     <meta name="description"
         content="Ứng dụng Windows và Chrome Extension lăn trang bằng click chuột, không cần wheel. Free, lightweight scrolling utility.">
-    <meta name="keywords" content="scrollnice, scroll, mouse wheel, click to scroll, windows utility, chrome extension">
     <meta property="og:title" content="ScrollNice — Scroll by Clicking">
     <meta property="og:description"
-        content="Floating zone click to scroll — no wheel needed. 3 modes, always-on-top, free.">
+        content="Floating zone for click-based-scrolling — no wheel needed. 3 modes, always-on-top, free.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Prevent flash of wrong theme -->
-    <script>
-        (function () {
-            const t = localStorage.getItem('sn_theme') || 'dark';
-            document.documentElement.dataset.theme = t;
-        })();
-    </script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js" defer></script>
+    <!-- Anti-flash theme -->
+    <script>(function () { const t = localStorage.getItem('sn_theme') || 'dark'; document.documentElement.dataset.theme = t; })();</script>
 </head>
 
 <body>
-
-    <!-- Scroll Progress Bar -->
     <div id="scroll-progress"></div>
 
-    <!-- Nav -->
+    <!-- ══ NAV ══ -->
     <nav class="nav" id="main-nav">
         <div class="container">
             <a href="index.html" class="nav-brand">🖱️ ScrollNice</a>
@@ -43,38 +37,42 @@
                 <a href="#donation" style="color:#f87171;" data-i18n="nav_support">Ủng hộ</a>
             </div>
 
-            <!-- Theme Toggle -->
-            <button class="theme-btn" title="Toggle theme">☀️</button>
+            <!-- Controls group -->
+            <div style="display:flex;align-items:center;gap:8px;margin-left:20px;">
+                <!-- Theme -->
+                <button class="theme-btn" id="theme-btn" title="Toggle theme">☀️</button>
 
-            <!-- Language Dropdown -->
-            <div class="lang-dropdown" id="lang-dropdown-nav">
-                <button class="lang-trigger" aria-haspopup="true" aria-expanded="false">
-                    <span class="lang-trigger-flag">🇻🇳</span>
-                    <span class="lang-trigger-label">VI</span>
-                    <span class="chevron">▾</span>
-                </button>
-                <div class="lang-menu" role="menu">
-                    <button class="lang-option active" data-lang="vi" role="menuitem">
-                        🇻🇳 <span>Tiếng Việt</span>
-                        <span class="check">✓</span>
+                <!-- Language Dropdown -->
+                <div class="lang-dropdown" id="lang-dd">
+                    <button class="lang-trigger" aria-haspopup="true">
+                        <img class="flag-img lang-trigger-flag" src="https://flagcdn.com/18x13/vn.png" alt="VN"
+                            width="18" height="13">
+                        <span class="lang-trigger-label">VI</span>
+                        <span class="chevron">▾</span>
                     </button>
-                    <button class="lang-option" data-lang="en" role="menuitem">
-                        🇺🇸 <span>English</span>
-                        <span class="check" style="display:none">✓</span>
-                    </button>
+                    <div class="lang-menu" role="menu">
+                        <button class="lang-option active" data-lang="vi" role="menuitem">
+                            <img class="flag-img" src="https://flagcdn.com/18x13/vn.png" alt="VN" width="18"
+                                height="13">
+                            Tiếng Việt <span class="check">✓</span>
+                        </button>
+                        <button class="lang-option" data-lang="en" role="menuitem">
+                            <img class="flag-img" src="https://flagcdn.com/18x13/us.png" alt="US" width="18"
+                                height="13">
+                            English <span class="check" style="display:none">✓</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <a href="#download" class="nav-cta" data-i18n="nav_cta">⬇ Tải về miễn phí</a>
 
-            <!-- Hamburger (mobile) -->
-            <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
-                <span></span><span></span><span></span>
-            </button>
+            <button class="nav-hamburger" id="hamburger"
+                aria-label="Menu"><span></span><span></span><span></span></button>
         </div>
     </nav>
 
-    <!-- Mobile Nav -->
+    <!-- Mobile nav -->
     <div class="nav-mobile" id="nav-mobile">
         <a href="#features" data-i18n="nav_features">Tính năng</a>
         <a href="#modes" data-i18n="nav_modes">Chế độ</a>
@@ -83,84 +81,125 @@
         <a href="changelog.html" data-i18n="nav_changelog">Changelog</a>
         <a href="#donation" style="color:#f87171;" data-i18n="nav_support">❤️ Ủng hộ</a>
         <div style="display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--border);">
-            <button class="theme-btn" style="margin-left:0;">☀️</button>
-            <!-- Dropdown in mobile menu too -->
-            <div class="lang-dropdown" id="lang-dropdown-mobile">
+            <button class="theme-btn" style="margin-left:0">☀️</button>
+            <div class="lang-dropdown">
                 <button class="lang-trigger">
-                    <span class="lang-trigger-flag">🇻🇳</span>
-                    <span class="lang-trigger-label">VI</span>
-                    <span class="chevron">▾</span>
+                    <img class="flag-img lang-trigger-flag" src="https://flagcdn.com/18x13/vn.png" alt="" width="18"
+                        height="13">
+                    <span class="lang-trigger-label">VI</span><span class="chevron">▾</span>
                 </button>
                 <div class="lang-menu">
-                    <button class="lang-option active" data-lang="vi">🇻🇳 <span>Tiếng Việt</span><span
+                    <button class="lang-option active" data-lang="vi"><img class="flag-img"
+                            src="https://flagcdn.com/18x13/vn.png" alt="" width="18" height="13"> Tiếng Việt <span
                             class="check">✓</span></button>
-                    <button class="lang-option" data-lang="en">🇺🇸 <span>English</span><span class="check"
-                            style="display:none">✓</span></button>
+                    <button class="lang-option" data-lang="en"><img class="flag-img"
+                            src="https://flagcdn.com/18x13/us.png" alt="" width="18" height="13"> English <span
+                            class="check" style="display:none">✓</span></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ══════════════ HERO ══════════════ -->
+    <!-- ══ HERO ══ -->
     <section class="hero">
-        <!-- Canvas particles -->
         <canvas id="hero-canvas"
-            style="width:100%;height:100%;position:absolute;inset:0;z-index:0;pointer-events:none;"></canvas>
+            style="position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
 
-        <!-- Rotating orbit rings (like unikorn.vn's bronze drum) -->
+        <!-- Trống Đồng orbit rings — richer SVG pattern -->
         <div class="hero-orbit">
-            <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Outer ring with tick marks -->
-                <circle cx="250" cy="250" r="240" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 18" />
-                <!-- Mid ring -->
-                <circle cx="250" cy="250" r="195" stroke="currentColor" stroke-width="1" stroke-dasharray="4 28" />
-                <!-- Concentric decorative rings -->
-                <circle cx="250" cy="250" r="155" stroke="currentColor" stroke-width="1.5" />
-                <circle cx="250" cy="250" r="120" stroke="currentColor" stroke-width=".8" stroke-dasharray="3 14" />
-                <circle cx="250" cy="250" r="85" stroke="currentColor" stroke-width="1.2" />
-                <!-- Center cross -->
-                <line x1="250" y1="155" x2="250" y2="345" stroke="currentColor" stroke-width=".8" opacity=".5" />
-                <line x1="160" y1="250" x2="340" y2="250" stroke="currentColor" stroke-width=".8" opacity=".5" />
-                <!-- 4 dots on middle ring -->
-                <circle cx="250" cy="95" r="4" fill="currentColor" />
-                <circle cx="405" cy="250" r="4" fill="currentColor" />
-                <circle cx="250" cy="405" r="4" fill="currentColor" />
-                <circle cx="95" cy="250" r="4" fill="currentColor" />
+            <svg viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" color="currentColor">
+                <!-- Star / sun center — 16-ray sun (trống đồng centerpiece) -->
+                <g transform="translate(300,300)">
+                    <!-- Sun rays -->
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(22.5)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(45)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(67.5)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(90)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(112.5)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(135)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(157.5)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(180)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(202.5)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(225)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(247.5)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(270)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(292.5)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(315)" />
+                    <path d="M0-40 L5-18 L0-22 L-5-18 Z" fill="currentColor" opacity=".9" transform="rotate(337.5)" />
+                    <!-- Center circle -->
+                    <circle r="14" fill="currentColor" />
+                    <circle r="8" fill="var(--bg)" opacity=".4" />
+                </g>
+                <!-- Band 1 — inner geometric -->
+                <circle cx="300" cy="300" r="58" stroke="currentColor" stroke-width="2.5" />
+                <!-- Connector lines in band 1 -->
+                <circle cx="300" cy="300" r="76" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 3" />
+                <!-- Band 2 -->
+                <circle cx="300" cy="300" r="95" stroke="currentColor" stroke-width="2.5" />
+                <!-- Decorative dot ring at r=107 -->
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(30,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(60,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(90,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(120,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(150,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(180,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(210,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(240,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(270,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(300,300,300)" />
+                <circle cx="300" cy="193" r="5.5" fill="currentColor" transform="rotate(330,300,300)" />
+                <!-- Band 3 -->
+                <circle cx="300" cy="300" r="118" stroke="currentColor" stroke-width="2" />
+                <circle cx="300" cy="300" r="140" stroke="currentColor" stroke-width="1" stroke-dasharray="8 6" />
+                <!-- Bird silhouettes (simplified) at r=158 -->
+                <g fill="currentColor" opacity=".8">
+                    <ellipse cx="300" cy="142" rx="8" ry="5" transform="rotate(0,300,300)" />
+                    <ellipse cx="300" cy="142" rx="8" ry="5" transform="rotate(60,300,300)" />
+                    <ellipse cx="300" cy="142" rx="8" ry="5" transform="rotate(120,300,300)" />
+                    <ellipse cx="300" cy="142" rx="8" ry="5" transform="rotate(180,300,300)" />
+                    <ellipse cx="300" cy="142" rx="8" ry="5" transform="rotate(240,300,300)" />
+                    <ellipse cx="300" cy="142" rx="8" ry="5" transform="rotate(300,300,300)" />
+                </g>
+                <!-- Band 4 - outer -->
+                <circle cx="300" cy="300" r="160" stroke="currentColor" stroke-width="2" />
+                <circle cx="300" cy="300" r="180" stroke="currentColor" stroke-width="1.2" stroke-dasharray="12 8" />
+                <circle cx="300" cy="300" r="200" stroke="currentColor" stroke-width="2" />
+                <!-- Outer tick marks at r=220 -->
+                <circle cx="300" cy="300" r="220" stroke="currentColor" stroke-width="1" stroke-dasharray="3 13" />
+                <circle cx="300" cy="300" r="238" stroke="currentColor" stroke-width="1.8" />
+                <circle cx="300" cy="300" r="252" stroke="currentColor" stroke-width="1" stroke-dasharray="4 16" />
+                <circle cx="300" cy="300" r="270" stroke="currentColor" stroke-width="1.5" />
+                <circle cx="300" cy="300" r="285" stroke="currentColor" stroke-width=".8" stroke-dasharray="2 20" />
             </svg>
         </div>
         <div class="hero-orbit-inner">
             <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="150" cy="150" r="140" stroke="currentColor" stroke-width="2" stroke-dasharray="3 20" />
-                <circle cx="150" cy="150" r="100" stroke="currentColor" stroke-width="1.2" />
-                <circle cx="150" cy="150" r="60" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 10" />
-                <circle cx="150" cy="150" r="20" stroke="currentColor" stroke-width="1.2" />
-                <circle cx="150" cy="10" r="5" fill="currentColor" />
-                <circle cx="290" cy="150" r="5" fill="currentColor" />
-                <circle cx="150" cy="290" r="5" fill="currentColor" />
-                <circle cx="10" cy="150" r="5" fill="currentColor" />
+                <circle cx="150" cy="150" r="140" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 16" />
+                <circle cx="150" cy="150" r="115" stroke="currentColor" stroke-width="1.2" />
+                <circle cx="150" cy="150" r="90" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 8" />
+                <circle cx="150" cy="150" r="65" stroke="currentColor" stroke-width="1" />
+                <circle cx="150" cy="150" r="42" stroke="currentColor" stroke-width="1.5" />
+                <circle cx="150" cy="150" r="20" fill="currentColor" opacity=".3" />
             </svg>
         </div>
 
-        <div class="container">
+        <div class="container" style="position:relative;z-index:1;">
             <div class="hero-badge" data-i18n="hero_badge">✨ Miễn phí &amp; Mã nguồn mở</div>
             <h1 data-i18n="hero_h1">Lăn Chuột Bằng <span class="gradient">Click</span>,<br>Không Cần Wheel</h1>
-            <p data-i18n="hero_p">Zone nổi always-on-top — click, giữ, hoặc chỉ di chuột để lăn trang.<br>
-                Hoàn hảo khi wheel hỏng, dùng một tay, hoặc muốn trải nghiệm cuộn trang mới.</p>
-
+            <p data-i18n="hero_p">Zone nổi always-on-top — click, giữ, hoặc chỉ di chuột để lăn trang.<br>Hoàn hảo khi
+                wheel hỏng, dùng một tay, hoặc muốn trải nghiệm cuộn trang mới.</p>
             <div class="hero-buttons">
                 <a href="#download" class="btn btn-primary" data-i18n="hero_btn_win">⬇ Tải về Windows</a>
                 <a href="#download" class="btn btn-secondary" data-i18n="hero_btn_ext">🌐 Chrome Extension</a>
             </div>
-
-            <!-- Zone Demo -->
             <div class="hero-demo">
                 <div class="zone-demo">
                     <div class="zone-demo-top">▲</div>
                     <div class="zone-demo-bot">▼</div>
                 </div>
             </div>
-
-            <!-- Stats -->
             <div class="hero-stats">
                 <div class="hero-stat"><strong>&lt; 500KB</strong><span>App Size</span></div>
                 <div class="hero-stat"><strong>3</strong><span>Scroll Modes</span></div>
@@ -170,7 +209,7 @@
         </div>
     </section>
 
-    <!-- ══════════════ FEATURES ══════════════ -->
+    <!-- ══ FEATURES ══ -->
     <section class="features" id="features">
         <div class="container">
             <div class="section-head">
@@ -178,27 +217,39 @@
                 <h2 data-i18n="features_title">Tại sao dùng ScrollNice?</h2>
             </div>
             <div class="feature-grid">
-                <div class="feature-card"><span class="feature-num">01</span><span class="feature-icon">🖱️</span>
+                <div class="feature-card"><span class="feature-num">01</span>
+                    <span class="feature-icon"><i class="ph ph-mouse"
+                            style="font-size:32px;color:var(--accent)"></i></span>
                     <h3 data-i18n="feat1_title">Click / Giữ / Di chuột</h3>
                     <p data-i18n="feat1_p"></p>
                 </div>
-                <div class="feature-card"><span class="feature-num">02</span><span class="feature-icon">🪶</span>
+                <div class="feature-card"><span class="feature-num">02</span>
+                    <span class="feature-icon"><i class="ph ph-feather"
+                            style="font-size:32px;color:var(--accent)"></i></span>
                     <h3 data-i18n="feat2_title">Siêu nhẹ</h3>
                     <p data-i18n="feat2_p"></p>
                 </div>
-                <div class="feature-card"><span class="feature-num">03</span><span class="feature-icon">🎨</span>
+                <div class="feature-card"><span class="feature-num">03</span>
+                    <span class="feature-icon"><i class="ph ph-paint-brush"
+                            style="font-size:32px;color:var(--accent)"></i></span>
                     <h3 data-i18n="feat3_title">Tùy chỉnh</h3>
                     <p data-i18n="feat3_p"></p>
                 </div>
-                <div class="feature-card"><span class="feature-num">04</span><span class="feature-icon">🔊</span>
+                <div class="feature-card"><span class="feature-num">04</span>
+                    <span class="feature-icon"><i class="ph ph-speaker-high"
+                            style="font-size:32px;color:var(--accent)"></i></span>
                     <h3 data-i18n="feat4_title">Âm thanh click</h3>
                     <p data-i18n="feat4_p"></p>
                 </div>
-                <div class="feature-card"><span class="feature-num">05</span><span class="feature-icon">⌨️</span>
+                <div class="feature-card"><span class="feature-num">05</span>
+                    <span class="feature-icon"><i class="ph ph-keyboard"
+                            style="font-size:32px;color:var(--accent)"></i></span>
                     <h3 data-i18n="feat5_title">Phím tắt</h3>
                     <p data-i18n="feat5_p"></p>
                 </div>
-                <div class="feature-card"><span class="feature-num">06</span><span class="feature-icon">🔒</span>
+                <div class="feature-card"><span class="feature-num">06</span>
+                    <span class="feature-icon"><i class="ph ph-prohibit"
+                            style="font-size:32px;color:var(--accent)"></i></span>
                     <h3 data-i18n="feat6_title">Chặn Wheel</h3>
                     <p data-i18n="feat6_p"></p>
                 </div>
@@ -206,7 +257,7 @@
         </div>
     </section>
 
-    <!-- ══════════════ MODES ══════════════ -->
+    <!-- ══ MODES ══ -->
     <section class="modes" id="modes">
         <div class="container">
             <div class="section-head">
@@ -215,15 +266,20 @@
                 <p data-i18n="modes_sub">Chọn chế độ phù hợp với thói quen của bạn</p>
             </div>
             <div class="mode-grid">
-                <div class="mode-card"><span class="mode-badge">Mode 1</span><span class="icon">🖱️</span>
+                <div class="mode-card"><span class="mode-badge">Mode 1</span>
+                    <span class="icon"><i class="ph ph-mouse-left-click"
+                            style="font-size:38px;color:var(--accent)"></i></span>
                     <h3 data-i18n="mode1_title">Click / Giữ</h3>
                     <p data-i18n="mode1_p"></p>
                 </div>
-                <div class="mode-card"><span class="mode-badge">Mode 2</span><span class="icon">▲▼</span>
+                <div class="mode-card"><span class="mode-badge">Mode 2</span>
+                    <span class="icon"><i class="ph ph-arrows-out-line-vertical"
+                            style="font-size:38px;color:var(--accent2)"></i></span>
                     <h3 data-i18n="mode2_title">Chia Trên / Dưới</h3>
                     <p data-i18n="mode2_p"></p>
                 </div>
-                <div class="mode-card"><span class="mode-badge">Mode 3</span><span class="icon">✨</span>
+                <div class="mode-card"><span class="mode-badge">Mode 3</span>
+                    <span class="icon"><i class="ph ph-cursor" style="font-size:38px;color:var(--gold)"></i></span>
                     <h3 data-i18n="mode3_title">Di Chuột Tự Động</h3>
                     <p data-i18n="mode3_p"></p>
                 </div>
@@ -231,24 +287,24 @@
         </div>
     </section>
 
-    <!-- ══════════════ DOWNLOAD ══════════════ -->
+    <!-- ══ DOWNLOAD ══ -->
     <section class="download" id="download">
         <div class="container">
             <div class="section-head">
                 <div class="section-tag">Download</div>
                 <h2 data-i18n="download_title">Tải về ScrollNice</h2>
             </div>
-            <p data-i18n="download_sub">Miễn phí mãi mãi. Không cần đăng ký.</p>
+            <p data-i18n="download_sub" style="color:var(--txt2);margin-bottom:40px;font-size:15px;"></p>
             <div class="dl-cards">
                 <div class="dl-card">
                     <h3 data-i18n="dl_win_title">🖥️ Ứng dụng Windows</h3>
-                    <p data-i18n="dl_win_p"></p>
+                    <p data-i18n="dl_win_p" style="color:var(--txt2);"></p>
                     <a href="https://github.com/anhhackta/ScrollNice/releases" class="btn btn-primary"
                         style="width:100%;justify-content:center;" data-i18n="dl_win_btn">Tải về (.zip)</a>
                 </div>
                 <div class="dl-card">
                     <h3 data-i18n="dl_ext_title">🌐 Chrome Extension</h3>
-                    <p data-i18n="dl_ext_p"></p>
+                    <p data-i18n="dl_ext_p" style="color:var(--txt2);"></p>
                     <a href="https://github.com/anhhackta/ScrollNice" class="btn btn-secondary"
                         style="width:100%;justify-content:center;" data-i18n="dl_ext_btn">Xem trên GitHub</a>
                 </div>
@@ -256,11 +312,12 @@
         </div>
     </section>
 
-    <!-- ══════════════ DONATION ══════════════ -->
+    <!-- ══ DONATION ══ -->
     <section class="donation" id="donation">
         <div class="container">
             <h2 data-i18n="donation_title">❤️ Ủng hộ dự án</h2>
-            <p data-i18n="donation_sub"></p>
+            <p data-i18n="donation_sub"
+                style="color:var(--txt2);max-width:520px;margin:0 auto 40px;font-size:15px;line-height:1.7;"></p>
             <div class="donation-cards">
                 <a class="donation-card kofi" href="https://ko-fi.com/hoang2k2" target="_blank" rel="noopener">
                     <span class="donation-icon">☕</span>
@@ -280,38 +337,86 @@
         </div>
     </section>
 
-    <!-- ══════════════ SUPPORTERS MARQUEE ══════════════ -->
+    <!-- ══ SUPPORTERS MARQUEE ══ -->
     <section class="supporters">
         <div class="supporters-label" data-i18n="supporters_label">🤝 Đồng hành cùng dự án</div>
         <div class="marquee-wrap">
-            <div class="marquee-track" id="marquee-track">
-                <!-- Items x2 for seamless loop -->
-                <div class="marquee-item"><span class="avatar">BA</span> Briar Angry <span class="dot"></span></div>
-                <div class="marquee-item"><span class="avatar">AG</span> Antigravity <span class="dot"></span></div>
-                <div class="marquee-item"><span class="avatar">SN</span> ScrollNice Community <span class="dot"></span>
-                </div>
-                <div class="marquee-item"><span class="avatar">❤</span> Bạn (You!) <span class="dot"></span></div>
-                <div class="marquee-item"><span class="avatar">🇻🇳</span> Made in Vietnam <span class="dot"></span>
-                </div>
-                <!-- Duplicate for infinite scroll -->
-                <div class="marquee-item"><span class="avatar">BA</span> Briar Angry <span class="dot"></span></div>
-                <div class="marquee-item"><span class="avatar">AG</span> Antigravity <span class="dot"></span></div>
-                <div class="marquee-item"><span class="avatar">SN</span> ScrollNice Community <span class="dot"></span>
-                </div>
-                <div class="marquee-item"><span class="avatar">❤</span> Bạn (You!) <span class="dot"></span></div>
-                <div class="marquee-item"><span class="avatar">🇻🇳</span> Made in Vietnam <span class="dot"></span>
-                </div>
+            <div class="marquee-track">
+                <!-- 4 sets of items for completely seamless infinite loop -->
+                <div class="marquee-item"><span class="avatar">BA</span> Briar Angry</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">AG</span> Antigravity</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar" style="background:var(--grad2)">SN</span> ScrollNice
+                    Community</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar"
+                        style="background:linear-gradient(135deg,#f59e0b,#ef4444)">❤</span> Bạn (You!)</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar"
+                        style="background:linear-gradient(135deg,#dc2626,#facc15)">🇻🇳</span> Made in Vietnam</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <!-- Duplicate 1 -->
+                <div class="marquee-item"><span class="avatar">BA</span> Briar Angry</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar">AG</span> Antigravity</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar" style="background:var(--grad2)">SN</span> ScrollNice
+                    Community</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar"
+                        style="background:linear-gradient(135deg,#f59e0b,#ef4444)">❤</span> Bạn (You!)</div>
+                <div class="marquee-item"><span class="dot"></span></div>
+                <div class="marquee-item"><span class="avatar"
+                        style="background:linear-gradient(135deg,#dc2626,#facc15)">🇻🇳</span> Made in Vietnam</div>
+                <div class="marquee-item"><span class="dot"></span></div>
             </div>
         </div>
     </section>
 
-    <!-- ══════════════ FOOTER ══════════════ -->
-    <footer class="footer">
+    <!-- ══ SITE FOOTER ══ -->
+    <footer class="site-footer">
         <div class="container">
-            <p data-i18n="footer_text">ScrollNice — Made with ❤️ |
-                <a href="https://github.com/anhhackta/ScrollNice">GitHub</a> |
-                Không telemetry · Không quảng cáo · 100% miễn phí
-            </p>
+            <div class="footer-grid">
+                <!-- Brand -->
+                <div class="footer-brand">
+                    <h3>🖱️ ScrollNice</h3>
+                    <p>Tiện ích lăn trang miễn phí bằng click chuột. Không cần wheel, không quảng cáo, không
+                        telemetry.<br><br>Free scrolling utility for Windows &amp; Chrome.</p>
+                </div>
+                <!-- Links -->
+                <div class="footer-col">
+                    <h4>Tài nguyên</h4>
+                    <a href="docs/index.html">Hướng dẫn</a>
+                    <a href="docs/quickstart.html">Bắt đầu nhanh</a>
+                    <a href="docs/modes.html">Chế độ lăn</a>
+                    <a href="docs/settings.html">Cài đặt</a>
+                    <a href="changelog.html">Changelog</a>
+                </div>
+                <!-- Project -->
+                <div class="footer-col">
+                    <h4>Dự án</h4>
+                    <a href="https://github.com/anhhackta/ScrollNice" target="_blank">GitHub</a>
+                    <a href="https://github.com/anhhackta/ScrollNice/issues" target="_blank">Báo lỗi</a>
+                    <a href="docs/privacy.html">Quyền riêng tư</a>
+                    <a href="docs/troubleshoot.html">Xử lý lỗi</a>
+                </div>
+                <!-- Donate -->
+                <div class="footer-col footer-donate">
+                    <h4>❤️ Ủng hộ</h4>
+                    <a href="https://ko-fi.com/hoang2k2" target="_blank" rel="noopener">☕ Ko-fi — ko-fi.com/hoang2k2</a>
+                    <a href="https://paypal.me/bahoang2k2" target="_blank" rel="noopener">💳 PayPal —
+                        paypal.me/bahoang2k2</a>
+                </div>
+            </div>
+            <div class="footer-bar">
+                <span>© 2025 ScrollNice · Made with ❤️ in Vietnam</span>
+                <span>
+                    <a href="https://github.com/anhhackta/ScrollNice">GitHub</a> ·
+                    <a href="docs/privacy.html">Privacy</a> ·
+                    <a href="changelog.html">Changelog</a>
+                </span>
+            </div>
         </div>
     </footer>
 

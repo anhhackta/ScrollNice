@@ -1668,3 +1668,232 @@ section h2 {
     color: white;
     flex-shrink: 0;
 }
+
+/* ════════════════════════════════════════════════════════
+   FIXES v3 — flags, nav alignment, marquee, footer, orbit
+══════════════════════════════════════════════════════════ */
+
+/* ── Flag image (flagcdn.com) ── */
+.flag-img {
+    width: 18px;
+    height: 13px;
+    border-radius: 2px;
+    object-fit: cover;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.lang-trigger .flag-img {
+    margin-right: 2px;
+}
+
+/* ── Nav alignment: all controls same height 34px ── */
+.theme-btn,
+.lang-trigger,
+.nav-cta {
+    height: 34px;
+}
+
+.lang-trigger {
+    padding: 0 12px;
+    gap: 7px;
+}
+
+.theme-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+}
+
+/* ── Marquee: seamless, no gap ── */
+.marquee-track {
+    will-change: transform;
+}
+
+.marquee-item .sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+    margin: 0 8px;
+}
+
+/* ── Hero orbit: bigger, more opaque, better pattern ── */
+.hero-orbit {
+    width: min(820px, 115vw);
+    height: min(820px, 115vw);
+    opacity: .07;
+    color: var(--accent);
+}
+
+.hero-orbit-inner {
+    width: min(540px, 78vw);
+    height: min(540px, 78vw);
+    opacity: .055;
+    color: var(--accent2);
+}
+
+[data-theme="light"] .hero-orbit {
+    opacity: .09;
+    color: #2563eb;
+}
+
+[data-theme="light"] .hero-orbit-inner {
+    opacity: .065;
+    color: #7c3aed;
+}
+
+/* ── Site footer (multi-column) ── */
+.site-footer {
+    background: var(--bg-mid);
+    border-top: 1px solid var(--border);
+    padding: 60px 0 28px;
+    margin-top: 0;
+}
+
+.site-footer .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.3fr;
+    gap: 40px;
+    margin-bottom: 48px;
+}
+
+.footer-brand h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.footer-brand p {
+    font-size: 13px;
+    color: var(--txt2);
+    line-height: 1.6;
+    max-width: 220px;
+}
+
+.footer-col h4 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--txt2);
+    margin-bottom: 14px;
+    opacity: .7;
+}
+
+.footer-col a {
+    display: block;
+    font-size: 13px;
+    color: var(--txt2);
+    margin-bottom: 8px;
+    transition: color .2s;
+}
+
+.footer-col a:hover {
+    color: var(--txt);
+    opacity: 1;
+}
+
+.footer-donate a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--txt);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    transition: all .2s;
+    background: var(--bg-card);
+}
+
+.footer-donate a:hover {
+    border-color: var(--border-h);
+    transform: translateY(-1px);
+}
+
+.footer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--txt2);
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.footer-bar a {
+    color: var(--accent);
+    font-size: 12px;
+}
+
+/* ── Phosphor icons (inline SVG base style) ── */
+.ph-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.feature-icon .ph-icon svg,
+.feature-icon svg {
+    width: 36px;
+    height: 36px;
+}
+
+.mode-card .icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+/* ── Docs nav — fixed layout: brand + links + controls all in one row ── */
+.docs-nav .container {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.docs-nav .nav-links {
+    margin: 0 auto 0 24px;
+}
+
+.docs-nav .nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* ── Lang option flag ── */
+.lang-option {
+    gap: 8px;
+}
+
+/* Responsive footer */
+@media (max-width: 768px) {
+    .site-footer .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .site-footer .footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-bar {
+        flex-direction: column;
+        text-align: center;
+    }
+}

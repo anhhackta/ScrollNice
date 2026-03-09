@@ -13,28 +13,36 @@
         document.documentElement.dataset.theme = t;
       })();
     </script>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js" defer></script>
 </head>
 
 <body>
-    <nav class="nav">
-        <div class="container"><a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
-            <div class="nav-links"><a href="index.html" style="color:#3498db;">Docs</a></div>
+    <nav class="nav" id="main-nav">
+    <div class="container">
+        <a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+        <div class="nav-links">
+            <a href="../index.html" data-i18n="nav_home">Trang chủ</a>
+            <a href="index.html" style="color:var(--accent)" data-i18n="nav_docs">Hướng dẫn</a>
         </div>
-                <!-- Theme Toggle -->
-        <button class="theme-btn" title="Toggle theme">☀️</button>
-
-        <!-- Language Dropdown -->
-        <div class="lang-dropdown">
-            <button class="lang-trigger" aria-haspopup="true">
-                <span class="lang-trigger-flag"></span>
-                <span class="lang-trigger-label">VI</span>
-                <span class="chevron">▾</span>
-            </button>
-            <div class="lang-menu" role="menu">
-                <button class="lang-option active" data-lang="vi" role="menuitem">🇻🇳 <span>Tiếng Việt</span><span class="check">✓</span></button>
-                <button class="lang-option" data-lang="en" role="menuitem"> <span>English</span><span class="check" style="display:none"></span></button>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+            <button class="theme-btn" title="Toggle theme"></button>
+            <div class="lang-dropdown">
+                <button class="lang-trigger" aria-haspopup="true">
+                    <img class="flag-img lang-trigger-flag" src="https://flagcdn.com/18x13/vn.png" alt="VN" width="18" height="13">
+                    <span class="lang-trigger-label">VI</span>
+                    <span class="chevron"></span>
+                </button>
+                <div class="lang-menu" role="menu">
+                    <button class="lang-option active" data-lang="vi" role="menuitem">
+                        <img class="flag-img" src="https://flagcdn.com/18x13/vn.png" alt="VN" width="18" height="13"> Tiếng Việt <span class="check"></span>
+                    </button>
+                    <button class="lang-option" data-lang="en" role="menuitem">
+                        <img class="flag-img" src="https://flagcdn.com/18x13/us.png" alt="US" width="18" height="13"> English <span class="check" style="display:none"></span>
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
 </nav>
     <div class="container">
         <div class="docs-layout">
