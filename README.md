@@ -10,6 +10,16 @@
 [![Size: <500KB](https://img.shields.io/badge/Size-%3C500KB-green)](https://github.com/anhhackta/ScrollNice/releases)
 [![Free & Open Source](https://img.shields.io/badge/Free-%26%20Open%20Source-orange)](https://github.com/anhhackta/ScrollNice)
 
+<p align="center">
+<a href="https://github.com/anhhackta/ScrollNice/blob/main/README_vn.md">
+    <img src="https://hatscripts.github.io/circle-flags/flags/vn.svg" width="20">
+</a>
+  <!-- Keep these links. Translations will automatically update with the README. -->
+ <a href="https://github.com/anhhackta/ScrollNice">
+    <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" width="35">
+</a>
+</p>
+
 **ScrollNice** is a Windows utility and Chrome Extension that allows you to scroll by **clicking, holding, or just hovering** over a floating zone (Scroll Zone). Perfect for broken scroll wheels, one-handed workflows, or an alternative scrolling experience.
 
 🌐 **Website:** [anhhackta.github.io/ScrollNice](https://anhhackta.github.io/ScrollNice/)
