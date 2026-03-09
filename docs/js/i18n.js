@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ScrollNice i18n System v2
  * - IP geolocation auto-detect
  * - Glass dropdown language switcher (flag + name + chevron)
@@ -112,7 +112,7 @@ function applyLang(lang) {
 function updateDropdownUI(lang) {
     const meta = LANG_META[lang];
     const flagCode = lang === 'vi' ? 'vn' : 'us';
-    const flagSrc = `https://flagcdn.com/18x13/${flagCode}.png`;
+    const flagSrc = `https://flagcdn.com/w20/${flagCode}.png`;
     document.querySelectorAll('.lang-trigger-flag').forEach(el => {
         if (el.tagName === 'IMG') { el.src = flagSrc; el.alt = meta.label; }
         else el.textContent = meta.label;

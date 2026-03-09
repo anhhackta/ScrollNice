@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ScrollNice docs-i18n (for sub-pages)
  * Shares localStorage keys with main i18n.js
  */
@@ -49,7 +49,7 @@ function applyDocsLang(lang) {
     // Update dropdown triggers
     const meta = LANG_META[lang];
     const flagCode = lang === 'vi' ? 'vn' : 'us';
-    const flagSrc = `https://flagcdn.com/18x13/${flagCode}.png`;
+    const flagSrc = `https://flagcdn.com/w20/${flagCode}.png`;
     document.querySelectorAll('.lang-trigger-flag').forEach(el => {
         if (el.tagName === 'IMG') { el.src = flagSrc; el.alt = meta.label; }
         else el.textContent = meta.label;

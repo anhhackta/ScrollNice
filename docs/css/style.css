@@ -1555,12 +1555,11 @@ section h2 {
 }
 
 /* ════════════════════════════════════════════════════════
-   FOOTER SUPPORTERS MARQUEE
+   SUPPORTERS MARQUEE (unikorn-style)
 ══════════════════════════════════════════════════════════ */
 .supporters {
-    padding: 52px 0;
+    padding: 44px 0 40px;
     border-top: 1px solid var(--border);
-    overflow: hidden;
 }
 
 .supporters-label {
@@ -1570,43 +1569,19 @@ section h2 {
     letter-spacing: 1.8px;
     text-transform: uppercase;
     color: var(--txt2);
-    margin-bottom: 22px;
-    opacity: .6;
+    margin-bottom: 20px;
+    opacity: .55;
 }
 
+/* Unikorn-style: overflow hidden + mask-image for edge fade */
 .marquee-wrap {
-    position: relative;
     overflow: hidden;
-}
-
-/* Edge fade */
-.marquee-wrap::before,
-.marquee-wrap::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 120px;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.marquee-wrap::before {
-    left: 0;
-    background: linear-gradient(to right, var(--bg), transparent);
-}
-
-.marquee-wrap::after {
-    right: 0;
-    background: linear-gradient(to left, var(--bg), transparent);
-}
-
-[data-theme="light"] .marquee-wrap::before {
-    background: linear-gradient(to right, var(--bg), transparent);
-}
-
-[data-theme="light"] .marquee-wrap::after {
-    background: linear-gradient(to left, var(--bg), transparent);
+    max-width: 820px;
+    margin: 0 auto;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%);
+    display: flex;
+    gap: 0;
 }
 
 @keyframes marqueeScroll {
@@ -1615,59 +1590,51 @@ section h2 {
     }
 
     to {
-        transform: translateX(-50%);
+        transform: translateX(-100%);
     }
 }
 
+/* Each .marquee-track is one set; both sets animate identically
+   so they appear as one seamless stream */
 .marquee-track {
     display: flex;
+    flex-shrink: 0;
     gap: 0;
-    animation: marqueeScroll 28s linear infinite;
-    width: max-content;
+    animation: marqueeScroll 30s linear infinite;
+    will-change: transform;
 }
 
 .marquee-wrap:hover .marquee-track {
     animation-play-state: paused;
 }
 
-.marquee-item {
-    display: flex;
+.m-item {
+    display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 0 32px;
+    padding: 0 28px;
     font-size: 14px;
     font-weight: 600;
     color: var(--txt2);
     white-space: nowrap;
-    transition: color .2s;
+    transition: color .18s;
+    cursor: default;
 }
 
-.marquee-item:hover {
+.m-item:hover {
     color: var(--txt);
 }
 
-.marquee-item .dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--accent);
-    opacity: .5;
-    flex-shrink: 0;
-}
-
-.marquee-item .avatar {
+.m-avatar {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--grad);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: white;
+    object-fit: cover;
     flex-shrink: 0;
+    border: 1px solid var(--border);
 }
+
+
 
 /* ════════════════════════════════════════════════════════
    FIXES v3 — flags, nav alignment, marquee, footer, orbit
