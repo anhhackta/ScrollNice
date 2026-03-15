@@ -18,9 +18,11 @@ private:
     void InitControls(HWND dlg);
     void ReadControls(HWND dlg);
 
-    AppConfig* cfg_ = nullptr;
+    AppConfig*       cfg_    = nullptr;
     SettingsCallback onSave_;
-    HWND dlg_ = nullptr;
+    HWND             dlg_    = nullptr;
+    HINSTANCE        hInst_  = nullptr;  // needed for child control creation
+    bool             done_   = false;    // modal loop exit flag
 };
 
 } // namespace sn

@@ -13,6 +13,8 @@ public:
 
     bool Install(MouseHookCallback cb);
     void Uninstall();
+    bool IsInstalled() const { return hook_ != nullptr; }
+
 
 private:
     WinMouseHook() = default;

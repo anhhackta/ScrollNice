@@ -8,6 +8,7 @@
   "scroll": {
     "continuous_accel": 2,
     "continuous_speed": 10,
+    "hover_speed": 6,
     "mode": "click_lr",
     "scroll_amount": 300
   },
@@ -25,7 +26,7 @@
     "locked": false,
     "opacity": 0.25,
     "width": 228,
-    "x": 1349,
-    "y": 502
+    "x": 272,
+    "y": 138
   }
 }

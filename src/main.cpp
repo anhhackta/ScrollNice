@@ -37,7 +37,7 @@ static HINSTANCE   g_hInstance = nullptr;
 static UINT_PTR g_holdTimer = 0;          // timer for hold & hover scroll
 static const UINT_PTR TIMER_ID_HOLD = 201;
 static int  g_holdDirection = 0;           // 1=up, -1=down, 0=none
-static DWORD g_holdStartTime = 0;
+static ULONGLONG g_holdStartTime = 0;
 static bool g_leftHeld = false;
 static bool g_rightHeld = false;
 
@@ -45,6 +45,11 @@ static bool g_rightHeld = false;
 static UINT_PTR g_hoverTimer = 0;
 static const UINT_PTR TIMER_ID_HOVER = 202;
 static int  g_hoverDirection = 0;
+
+// Last known cursor position OUTSIDE the zone window.
+// Updated via WM_MOUSELEAVE from the overlay. Used by FindScrollTarget
+// to identify the scrollable window the user is trying to scroll.
+static POINT g_lastOutsidePos = {-1, -1};
 
 // ─────────── Forward declarations ───────────
 static void HandleZoneClick(int button, bool isDown, POINT clickPos, int zoneW, int zoneH);
@@ -58,6 +63,10 @@ static void ApplyConfig();
 static void OpenSettings();
 static void SetStartWithWindows(bool enable);
 static std::string GetConfigPath();
+static void UpdateWheelBlockHook(bool enable);
+static void OnHotkey(int id);
+static HWND FindScrollTarget();
+
 
 // ─────────── Hidden message window ───────────
 static const wchar_t* kMsgWindowClass = L"ScrollNice_MsgWnd";
@@ -72,7 +81,9 @@ static LRESULT CALLBACK MsgWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     case WM_TIMER: {
         auto& cfg = g_configStore.Get();
         if (wParam == TIMER_ID_HOLD && g_holdDirection != 0) {
-            double holdSec = (GetTickCount() - g_holdStartTime) / 1000.0;
+            ULONGLONG now = GetTickCount64();
+            if (now < g_holdStartTime) return 0;
+            double holdSec = (now - g_holdStartTime) / 1000.0;
             g_scrollEngine.ContinuousScrollTick(g_holdDirection,
                 cfg.scroll.continuous_speed, cfg.scroll.continuous_accel, holdSec);
         }
@@ -116,21 +127,30 @@ static LRESULT CALLBACK MsgWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 static void OnZoneEvent(const sn::ZoneEventData& e) {
     switch (e.event) {
     case sn::ZoneEvent::LeftClickDown:
+        // Identify scroll target BEFORE handling click (zone gains focus on click)
+        g_scrollEngine.SetTargetHwnd(FindScrollTarget());
         HandleZoneClick(0, true, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::LeftClickUp:
         HandleZoneClick(0, false, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::RightClickDown:
+        g_scrollEngine.SetTargetHwnd(FindScrollTarget());
         HandleZoneClick(1, true, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::RightClickUp:
         HandleZoneClick(1, false, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::HoverMove:
+        // Set target on first hover (needed for Mode 3 continuous scroll)
+        if (!g_scrollEngine.GetTargetHwnd())
+            g_scrollEngine.SetTargetHwnd(FindScrollTarget());
         HandleZoneHover(e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::HoverLeave:
+        // Record cursor position when leaving zone — used as anchor for FindScrollTarget
+        GetCursorPos(&g_lastOutsidePos);
+        g_scrollEngine.SetTargetHwnd(nullptr);  // clear target on leave
         StopHoverScroll();
         break;
     default:
@@ -164,7 +184,7 @@ static void HandleZoneClick(int button, bool isDown, POINT clickPos, int zoneW, 
 
             // Start hold timer for continuous scroll while button held
             if (button == 0) g_leftHeld = true; else g_rightHeld = true;
-            g_holdStartTime = GetTickCount() + 300; // 300ms delay before continuous starts
+            g_holdStartTime = GetTickCount64() + 300; // 300ms delay before continuous starts
             StartHoldScroll(direction);
         }
     } else {
@@ -209,6 +229,7 @@ static void StopHoldScroll() {
 
 static void StartHoverScroll(int direction) {
     g_hoverDirection = direction;
+    g_scrollEngine.Reset();
     if (!g_hoverTimer && g_msgWnd)
         g_hoverTimer = SetTimer(g_msgWnd, TIMER_ID_HOVER, 16, nullptr);
 }
@@ -219,6 +240,7 @@ static void StopHoverScroll() {
         g_hoverTimer = 0;
     }
     g_hoverDirection = 0;
+    g_scrollEngine.Reset();
 }
 
 // ─────────── Sound ───────────
@@ -233,6 +255,49 @@ static void PlayClickSound() {
     }
 }
 
+// ─────────── FindScrollTarget ───────────
+// Finds the scrollable window under the cursor to send WM_MOUSEWHEEL to.
+//
+// Why needed:
+//   When the user clicks inside the zone, the zone window receives focus.
+//   SendInput(MOUSEEVENTF_WHEEL) sends scroll to the focused window (=zone).
+//   By using PostMessage(targetHwnd, WM_MOUSEWHEEL) we bypass focus entirely.
+//
+// Algorithm:
+//   1. Use g_lastOutsidePos (set when cursor leaves the zone)
+//   2. WindowFromPoint — gets top-level window at that screen position
+//   3. ChildWindowFromPointEx — drills into children, skipping invisible/disabled
+//   4. Skip the zone hwnd itself
+static HWND FindScrollTarget() {
+    POINT pos = g_lastOutsidePos;
+
+    // If no outside position recorded yet, use current cursor position
+    if (pos.x < 0 && pos.y < 0) GetCursorPos(&pos);
+
+    HWND zoneHwnd = g_overlay.Handle();
+
+    // Get window at cursor position, excluding our own zone overlay
+    HWND top = WindowFromPoint(pos);
+    if (top == zoneHwnd || !top) {
+        // Try 4px offsets to step just outside the zone boundary
+        POINT offsets[4] = {{pos.x+4,pos.y},{pos.x-4,pos.y},
+                            {pos.x,pos.y+4},{pos.x,pos.y-4}};
+        for (auto& op : offsets) {
+            top = WindowFromPoint(op);
+            if (top && top != zoneHwnd) { pos = op; break; }
+        }
+    }
+    if (!top || top == zoneHwnd) return nullptr;
+
+    // Drill into child windows to find the innermost scrollable control
+    POINT clientPos = pos;
+    ScreenToClient(top, &clientPos);
+    HWND child = ChildWindowFromPointEx(top, clientPos,
+                    CWP_SKIPTRANSPARENT | CWP_SKIPINVISIBLE | CWP_SKIPDISABLED);
+
+    return (child && child != top) ? child : top;
+}
+
 static void ApplyConfig() {
     auto& cfg = g_configStore.Get();
     g_zoneManager.LoadFromConfig(cfg.zone);
@@ -241,10 +306,22 @@ static void ApplyConfig() {
     g_overlay.SetSize(cfg.zone.width, cfg.zone.height);
     g_overlay.SetOpacity(cfg.zone.opacity);
     g_overlay.SetLocked(cfg.zone.locked);
-    g_overlay.SetEnabled(cfg.enabled);
+    g_overlay.SetEnabled(g_stateMachine.IsEnabled());
     g_stateMachine.SetEnabled(cfg.enabled);
-    g_tray.SetEnabled(cfg.enabled);
+    g_tray.SetEnabled(g_stateMachine.IsEnabled());
+    g_tray.SetModeName(cfg.scroll.mode);   // update tray tooltip mode
     SetStartWithWindows(cfg.start_with_windows);
+    UpdateWheelBlockHook(cfg.wheel_block);
+
+    if (g_msgWnd) {
+        g_hotkeys.Unregister(g_msgWnd);
+        g_hotkeys.Register(g_msgWnd,
+            cfg.hotkeys.toggle_enabled,
+            cfg.hotkeys.toggle_edit,
+            "",
+            cfg.hotkeys.toggle_wheel,
+            OnHotkey);
+    }
 }
 
 static void OpenSettings() {
@@ -299,6 +376,17 @@ static bool OnMouseEvent(POINT, DWORD mouseMsg, MSLLHOOKSTRUCT*) {
     return false;
 }
 
+static void UpdateWheelBlockHook(bool enable) {
+    auto& hook = sn::WinMouseHook::Instance();
+    if (enable) {
+        if (!hook.IsInstalled())
+            hook.Install(OnMouseEvent);
+    } else {
+        if (hook.IsInstalled())
+            hook.Uninstall();
+    }
+}
+
 // ─────────── Hotkeys ───────────
 static void OnHotkey(int id) {
     switch (id) {
@@ -314,6 +402,8 @@ static void OnHotkey(int id) {
     case sn::WinHotkeys::HK_TOGGLE_WHEEL: {
         auto& cfg = g_configStore.Get();
         cfg.wheel_block = !cfg.wheel_block;
+        UpdateWheelBlockHook(cfg.wheel_block);
+        g_configStore.Save(g_configPath);
         break;
     }
     }
@@ -348,32 +438,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     g_msgWnd = CreateWindowExW(0, kMsgWindowClass, L"ScrollNice_Msg",
         0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, hInstance, nullptr);
 
-    // Init core
-    g_zoneManager.LoadFromConfig(cfg.zone);
-    g_stateMachine.SetEnabled(cfg.enabled);
-
     // Create zone overlay window
     g_overlay.Create(hInstance, cfg.zone, OnZoneEvent);
     g_overlay.SetScrollMode(sn::ScrollModeFromString(cfg.scroll.mode));
-    if (!cfg.enabled) g_overlay.Hide();
 
     // Tray icon
     g_tray.Create(g_msgWnd, hInstance, [](sn::WinTray::MenuItem item) {
         if (g_msgWnd) PostMessage(g_msgWnd, WM_COMMAND, MAKEWPARAM(item, 0), 0);
     });
 
-    // Hotkeys
-    g_hotkeys.Register(g_msgWnd,
-        cfg.hotkeys.toggle_enabled,
-        cfg.hotkeys.toggle_edit,
-        "",
-        cfg.hotkeys.toggle_wheel,
-        OnHotkey);
-
-    // Wheel block hook
-    if (cfg.wheel_block) {
-        sn::WinMouseHook::Instance().Install(OnMouseEvent);
-    }
+    // Apply config (hotkeys, hooks, overlay state)
+    ApplyConfig();
 
     // Message loop
     MSG msg;

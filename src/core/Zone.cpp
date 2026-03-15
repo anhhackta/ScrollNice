@@ -37,14 +37,11 @@ ZoneHalf ZoneManager::GetHalf(POINT pt, ScrollMode mode) const {
     int relX = pt.x - cfg_.x;
     int relY = pt.y - cfg_.y;
 
-    if (mode == ScrollMode::SplitTB) {
+    if (mode == ScrollMode::SplitHold) {
         return (relY < cfg_.height / 2) ? ZoneHalf::Top : ZoneHalf::Bottom;
     }
-    if (mode == ScrollMode::SplitLR) {
-        return (relX < cfg_.width / 2) ? ZoneHalf::Left : ZoneHalf::Right;
-    }
 
-    // For non-split modes, return None (caller uses button instead)
+    // For ClickHold and HoverAuto, position is handled by button or y-offset directly
     return ZoneHalf::None;
 }
 
