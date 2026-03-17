@@ -17,7 +17,9 @@ set(SOURCES
     src/platform/win/WinTray.cpp
     src/platform/win/WinHotkeys.cpp
     src/platform/win/WinSettings.cpp
+    src/platform/win/WinMainWindow.cpp
 )
+
 
 # Win32 GUI application (no console window)
 add_executable(ScrollNice WIN32 ${SOURCES})

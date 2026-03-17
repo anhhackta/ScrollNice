@@ -103,6 +103,7 @@ void WinSettings::Show(HINSTANCE hInst, HWND parent, AppConfig& cfg, SettingsCal
 
     if (hBrushBg)      { DeleteObject(hBrushBg);      hBrushBg      = nullptr; }
     if (hBrushSurface) { DeleteObject(hBrushSurface); hBrushSurface = nullptr; }
+    if (hFont_)        { DeleteObject(hFont_);        hFont_        = nullptr; }
 }
 
 // ─── InitControls ───
@@ -118,16 +119,18 @@ void WinSettings::InitControls(HWND dlg) {
     InvalidateRect(dlg, nullptr, TRUE);
 
     // Bold font for the dialog
-    HFONT hFont = CreateFontW(14, 0, 0, 0, FW_NORMAL, 0, 0, 0,
+    if (!hFont_) {
+        hFont_ = CreateFontW(14, 0, 0, 0, FW_NORMAL, 0, 0, 0,
                                DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                                CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
-    SendMessage(dlg, WM_SETFONT, (WPARAM)hFont, TRUE);
+    }
+    SendMessage(dlg, WM_SETFONT, (WPARAM)hFont_, TRUE);
 
     int y = 10, PW = 364;
 
     // ═══ General ═══
     HWND grp1 = mk(L"BUTTON", L"  General", BS_GROUPBOX, 10, y, PW, 82, 0); y += 24;
-    SendMessage(grp1, WM_SETFONT, (WPARAM)hFont, TRUE);
+    SendMessage(grp1, WM_SETFONT, (WPARAM)hFont_, TRUE);
     mk(L"BUTTON", L"Enable ScrollNice",   BS_AUTOCHECKBOX, 22, y, 180, 20, IDC_ENABLED);        y += 22;
     mk(L"BUTTON", L"Start with Windows",  BS_AUTOCHECKBOX, 22, y, 180, 20, IDC_START_WINDOWS);  y += 22;
     mk(L"BUTTON", L"Block Mouse Wheel (Ctrl+Alt+W)", BS_AUTOCHECKBOX, 22, y, 280, 20, IDC_WHEEL_BLOCK);
@@ -135,7 +138,7 @@ void WinSettings::InitControls(HWND dlg) {
 
     // ═══ Scroll Mode ═══
     HWND grp2 = mk(L"BUTTON", L"  Scroll Mode", BS_GROUPBOX, 10, y, PW, 90, 0); y += 24;
-    SendMessage(grp2, WM_SETFONT, (WPARAM)hFont, TRUE);
+    SendMessage(grp2, WM_SETFONT, (WPARAM)hFont_, TRUE);
     mk(L"BUTTON", L"Mode 1 \u2014 Click/Hold:  L\u2191  R\u2193",
        BS_AUTORADIOBUTTON | WS_GROUP, 22, y, PW - 24, 20, IDC_MODE_CLICK_HOLD); y += 22;
     mk(L"BUTTON", L"Mode 2 \u2014 Click/Hold:  Top\u2191  Bottom\u2193",
@@ -146,7 +149,7 @@ void WinSettings::InitControls(HWND dlg) {
 
     // ═══ Sensitivity ═══
     HWND grp3 = mk(L"BUTTON", L"  Sensitivity", BS_GROUPBOX, 10, y, PW, 46, 0); y += 24;
-    SendMessage(grp3, WM_SETFONT, (WPARAM)hFont, TRUE);
+    SendMessage(grp3, WM_SETFONT, (WPARAM)hFont_, TRUE);
     mk(L"STATIC", L"Scroll Amount:", 0, 22, y, 100, 18, 0);
     mk(L"EDIT",   L"", WS_BORDER | ES_NUMBER, 130, y - 2, 60, 22, IDC_SCROLL_AMOUNT);
     mk(L"STATIC", L"px / click", 0, 196, y, 80, 18, 0);
@@ -154,7 +157,7 @@ void WinSettings::InitControls(HWND dlg) {
 
     // ═══ Zone ═══
     HWND grp4 = mk(L"BUTTON", L"  Zone", BS_GROUPBOX, 10, y, PW, 90, 0); y += 24;
-    SendMessage(grp4, WM_SETFONT, (WPARAM)hFont, TRUE);
+    SendMessage(grp4, WM_SETFONT, (WPARAM)hFont_, TRUE);
     mk(L"STATIC", L"Width:",  0, 22,  y, 50, 18, 0);
     mk(L"EDIT",   L"", WS_BORDER | ES_NUMBER, 72,  y - 2, 55, 22, IDC_ZONE_WIDTH);
     mk(L"STATIC", L"Height:", 0, 148, y, 50, 18, 0);
@@ -171,14 +174,14 @@ void WinSettings::InitControls(HWND dlg) {
 
     // ═══ Sound ═══
     HWND grp5 = mk(L"BUTTON", L"  Sound", BS_GROUPBOX, 10, y, PW, 44, 0); y += 24;
-    SendMessage(grp5, WM_SETFONT, (WPARAM)hFont, TRUE);
+    SendMessage(grp5, WM_SETFONT, (WPARAM)hFont_, TRUE);
     mk(L"BUTTON", L"Click Sound (built-in beep or custom WAV)", BS_AUTOCHECKBOX,
        22, y, 300, 20, IDC_SOUND_ENABLED);
     y += 22 + 12;
 
     // ═══ Hotkeys ═══
     HWND grp6 = mk(L"BUTTON", L"  Hotkeys", BS_GROUPBOX, 10, y, PW, 50, 0); y += 24;
-    SendMessage(grp6, WM_SETFONT, (WPARAM)hFont, TRUE);
+    SendMessage(grp6, WM_SETFONT, (WPARAM)hFont_, TRUE);
     mk(L"STATIC", L"Enable:",      0,   22, y, 52, 18, 0);
     mk(L"EDIT",   L"", WS_BORDER, 76,  y - 2, 120, 22, IDC_HOTKEY_TOGGLE);
     mk(L"STATIC", L"Edit mode:",   0,  210, y, 70, 18, 0);
@@ -193,7 +196,7 @@ void WinSettings::InitControls(HWND dlg) {
     EnumChildWindows(dlg, [](HWND child, LPARAM lParam) -> BOOL {
         SendMessage(child, WM_SETFONT, (WPARAM)lParam, TRUE);
         return TRUE;
-    }, (LPARAM)hFont);
+    }, (LPARAM)hFont_);
 
     // ─── Populate values ───
     if (cfg_) {
@@ -276,13 +279,18 @@ INT_PTR CALLBACK WinSettings::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
     // ── Dark theme: child controls ──
     case WM_CTLCOLORSTATIC:
-    case WM_CTLCOLORBTN:
-    case WM_CTLCOLOREDIT:
-    case WM_CTLCOLORLISTBOX: {
+    case WM_CTLCOLORBTN: {
         HDC hdc = (HDC)wParam;
         SetTextColor(hdc, CLR_TEXT);
         SetBkColor(hdc, CLR_BG);
         return (INT_PTR)hBrushBg;
+    }
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX: {
+        HDC hdc = (HDC)wParam;
+        SetTextColor(hdc, CLR_TEXT);
+        SetBkColor(hdc, CLR_SURFACE);
+        return (INT_PTR)hBrushSurface;
     }
 
     // ── Opacity slider: update label live ──

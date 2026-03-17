@@ -75,8 +75,10 @@ bool WinOverlay::Create(HINSTANCE hInst, const ZoneConfig& cfg, ZoneEventCallbac
 
     InitGDI();
     SetOpacity(cfg_.opacity);
-    ShowWindow(hwnd_, SW_SHOWNOACTIVATE);
+    // Don't show here — let the caller (ApplyConfig) control visibility
+    // based on whether the app starts enabled or disabled.
     return true;
+
 }
 
 void WinOverlay::Destroy() {
@@ -403,8 +405,9 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             SetCursor(LoadCursor(nullptr, inGrip ? IDC_SIZENWSE : IDC_SIZEALL));
         }
 
-        // Mode 3 hover events
-        if (self->callback_ && self->enabled_ && !self->editMode_) {
+        // Mode 3 hover events (only when enabled & in HoverAuto)
+        if (self->callback_ && self->enabled_ && !self->editMode_ &&
+            self->mode_ == ScrollMode::HoverAuto) {
             if (!self->mouseTracking_) {
                 TRACKMOUSEEVENT tme = {sizeof(tme), TME_LEAVE, hwnd, 0};
                 TrackMouseEvent(&tme);
@@ -422,7 +425,8 @@ LRESULT CALLBACK WinOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
     case WM_MOUSELEAVE: {
         self->mouseTracking_ = false;
-        if (self->callback_ && self->enabled_ && !self->editMode_) {
+        if (self->callback_ && self->enabled_ && !self->editMode_ &&
+            self->mode_ == ScrollMode::HoverAuto) {
             ZoneEventData d = {};
             d.event = ZoneEvent::HoverLeave;
             self->callback_(d);

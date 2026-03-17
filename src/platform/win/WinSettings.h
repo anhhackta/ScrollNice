@@ -23,6 +23,7 @@ private:
     HWND             dlg_    = nullptr;
     HINSTANCE        hInst_  = nullptr;  // needed for child control creation
     bool             done_   = false;    // modal loop exit flag
+    HFONT            hFont_  = nullptr;  // dialog font (owned)
 };
 
 } // namespace sn

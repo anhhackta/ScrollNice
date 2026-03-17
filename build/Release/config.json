@@ -9,7 +9,7 @@
     "continuous_accel": 2,
     "continuous_speed": 10,
     "hover_speed": 6,
-    "mode": "click_lr",
+    "mode": "hover_auto",
     "scroll_amount": 300
   },
   "sound": {
@@ -23,8 +23,8 @@
     "color": "#3498db",
     "cover_image": "",
     "height": 133,
-    "locked": false,
-    "opacity": 0.25,
+    "locked": true,
+    "opacity": 0.27,
     "width": 228,
     "x": 272,
     "y": 138
