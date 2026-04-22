@@ -23,7 +23,7 @@
 | 🔒 **Không telemetry** | Không gửi dữ liệu, không quảng cáo, không internet |
 | ⌨️ **Phím tắt** | Ctrl+Alt+S bật/tắt, Ctrl+Alt+E chỉnh sửa, tùy chỉnh được |
 | 🎨 **Tùy chỉnh** | Resize/di chuyển zone, ảnh bìa, âm thanh click |
-| 🚫 **Chặn Wheel** | Tùy chọn chặn sự kiện wheel vật lý |
+| 🚫 **Chặn Wheel** | Bật/tắt chặn wheel vật lý (giữ `Alt` để bỏ qua) |
 | 🌐 **Chrome Extension** | Phiên bản trình duyệt nhẹ, load unpacked |
 | 🔄 **Portable** | Không cài đặt, chạy trực tiếp `.exe` |
 
@@ -31,114 +31,6 @@
 
 ## 🎮 3 Chế độ lăn / Scroll Modes
 
-### Mode 1 — Click / Giữ
-- **Click chuột trái** → lăn lên ↑
-- **Click chuột phải** → lăn xuống ↓
-- **Giữ chuột** → lăn liên tục, tốc độ tăng dần
-
-### Mode 2 — Chia vùng Trên / Dưới
-- Zone chia làm 2 nửa (trên / dưới)
-- **Click/Giữ nửa trên** → lăn lên ↑
-- **Click/Giữ nửa dưới** → lăn xuống ↓
-
-### Mode 3 — Di chuột Tự động *(đặc biệt)*
-- **Không cần click!**
-- Di chuột vào nửa trên → tự lăn lên ↑
-- Di chuột vào nửa dưới → tự lăn xuống ↓
-
----
-
-## 📥 Cài đặt / Installation
-
-### Windows App (Portable)
-1. Tải [`ScrollNice-portable.zip`](https://github.com/anhhackta/ScrollNice/releases) từ Releases
-2. Giải nén và chạy `ScrollNice.exe`
-3. Zone sẽ xuất hiện — đưa chuột vào để bắt đầu lăn
-
-> Config lưu tại `./config.json` bên cạnh file `.exe`
-
-### Chrome Extension
-1. Tải source hoặc clone repo
-2. Mở Chrome → `chrome://extensions/`
-3. Bật **Developer mode** → **Load unpacked**
-4. Chọn thư mục `extension/FeelClick/`
-
-### Build từ source (C++17 / CMake)
-```bash
-git clone https://github.com/anhhackta/ScrollNice.git
-cd ScrollNice
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release
-```
-Yêu cầu: MSVC 2019+ hoặc MinGW, CMake ≥ 3.20
-
----
-
-## ⌨️ Phím tắt mặc định / Default Hotkeys
-
-| Phím tắt | Chức năng |
-|----------|-----------|
-| `Ctrl+Alt+S` | Bật / Tắt ScrollNice |
-| `Ctrl+Alt+E` | Vào / Ra chế độ chỉnh sửa (Edit Mode) |
-| `Ctrl+Alt+Z` | Bật / Tắt zone tiếp theo |
-| `Ctrl+Alt+W` | Bật / Tắt chặn wheel vật lý |
-
-> Tất cả phím tắt có thể thay đổi trong `config.json`
-
----
-
-## ⚙️ Cấu hình / Configuration (`config.json`)
-
-```json
-{
-  "version": 1,
-  "enabled": true,
-  "wheel_block_mode": "off",
-  "bypass_modifier": "Alt",
-  "hotkeys": {
-    "toggle_enabled":  "Ctrl+Alt+S",
-    "toggle_edit":     "Ctrl+Alt+E",
-    "toggle_zone":     "Ctrl+Alt+Z",
-    "toggle_wheel":    "Ctrl+Alt+W"
-  },
-  "engine": {
-    "sensitivity":      1.2,
-    "dead_zone_px":     2,
-    "smoothing":        0.85,
-    "accel_power":      1.35,
-    "tick_ms":          10,
-    "max_events_per_sec": 120
-  },
-  "zones": [
-    {
-      "id":          "floating_zone",
-      "type":        "floating",
-      "x": 100, "y": 100,
-      "width": 120, "height": 200,
-      "mode":        "click_step",
-      "locked":      false
-    }
-  ],
-  "exclusions": {
-    "auto_suspend_fullscreen": true,
-    "process_names": []
-  },
-  "ui": {
-    "visible":      true,
-    "hover_alpha":  0.15,
-    "active_alpha": 0.35
-  }
-}
-```
-
-### Tùy chọn `wheel_block_mode`
-
-| Giá trị | Ý nghĩa |
-|---------|---------|
-| `off` | Không chặn wheel (mặc định) |
-| `global` | Chặn wheel toàn hệ thống |
-| `outside_zone_only` | Chỉ cho phép wheel khi ở trong zone |
-| `inside_zone_only` | Ngược lại |
 
 ---
 

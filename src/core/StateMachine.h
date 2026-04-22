@@ -39,8 +39,11 @@ private:
         if (callback_) callback_(old, ns);
     }
 
-    AppState state_ = AppState::Idle;
+    // Default: Disabled. Zone only appears when user toggles via hotkey or tray.
+    // Flow: Disabled → (Ctrl+Alt+S) → Idle → (Ctrl+Alt+E) → Edit → (Ctrl+Alt+E) → Idle
+    AppState state_ = AppState::Disabled;
     StateChangeCallback callback_;
+
 };
 
 } // namespace sn

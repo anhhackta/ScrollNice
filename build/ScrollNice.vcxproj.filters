@@ -34,6 +34,9 @@
     <ClCompile Include="E:\Game\ScrollNice\src\platform\win\WinSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Game\ScrollNice\src\platform\win\WinMainWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="E:\Game\ScrollNice\CMakeLists.txt" />

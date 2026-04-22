@@ -1,4 +1,8 @@
-// ScrollNice — main application entry point (v2.1: 3-mode redesign)
+// ScrollNice v2.1 — main application entry point
+// Architecture:
+//   WinMainWindow (visible GUI) → controls zone, settings, tray
+//   WinOverlay    (floating zone) → scroll events → ScrollEngine
+//   WinTray       (system tray icon) → minimize/restore main window
 #include <windows.h>
 #include <commctrl.h>
 #include <mmsystem.h>
@@ -7,6 +11,7 @@
 #include <cmath>
 
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "winmm.lib")
 
 #include "core/Config.h"
 #include "core/Zone.h"
@@ -16,35 +21,40 @@
 #include "platform/win/WinOverlay.h"
 #include "platform/win/WinTray.h"
 #include "platform/win/WinHotkeys.h"
-#include "platform/win/WinSettings.h"
-
-#pragma comment(lib, "winmm.lib")
+#include "platform/win/WinMainWindow.h"
 
 // ─────────── Globals ───────────
-static sn::ConfigStore    g_configStore;
-static sn::ZoneManager    g_zoneManager;
-static sn::ScrollEngine   g_scrollEngine;
-static sn::StateMachine   g_stateMachine;
-static sn::WinOverlay     g_overlay;
-static sn::WinTray        g_tray;
-static sn::WinHotkeys     g_hotkeys;
-static sn::WinSettings    g_settingsDlg;
+static sn::ConfigStore      g_configStore;
+static sn::ZoneManager      g_zoneManager;
+static sn::ScrollEngine     g_scrollEngine;
+static sn::StateMachine     g_stateMachine;
+static sn::WinOverlay       g_overlay;
+static sn::WinTray          g_tray;
+static sn::WinHotkeys       g_hotkeys;
+static sn::WinMainWindow    g_mainWindow;
 
 static std::string g_configPath;
 static HINSTANCE   g_hInstance = nullptr;
 
 // Continuous/hold scroll state
-static UINT_PTR g_holdTimer = 0;          // timer for hold & hover scroll
-static const UINT_PTR TIMER_ID_HOLD = 201;
-static int  g_holdDirection = 0;           // 1=up, -1=down, 0=none
-static DWORD g_holdStartTime = 0;
+static UINT_PTR g_holdTimer = 0;
+static const UINT_PTR TIMER_ID_HOLD = 501;
+static int  g_holdDirection = 0;
+static ULONGLONG g_holdStartTime = 0;
 static bool g_leftHeld = false;
 static bool g_rightHeld = false;
 
 // Hover scroll state (Mode 3)
 static UINT_PTR g_hoverTimer = 0;
-static const UINT_PTR TIMER_ID_HOVER = 202;
+static const UINT_PTR TIMER_ID_HOVER = 502;
 static int  g_hoverDirection = 0;
+
+// Last cursor pos outside zone (for FindScrollTarget)
+static POINT g_lastOutsidePos = {-1, -1};
+
+// Hidden message window (for hotkeys + timers)
+static const wchar_t* kMsgWindowClass = L"ScrollNice_MsgWnd";
+static HWND g_msgWnd = nullptr;
 
 // ─────────── Forward declarations ───────────
 static void HandleZoneClick(int button, bool isDown, POINT clickPos, int zoneW, int zoneH);
@@ -55,14 +65,15 @@ static void StartHoverScroll(int direction);
 static void StopHoverScroll();
 static void PlayClickSound();
 static void ApplyConfig();
-static void OpenSettings();
 static void SetStartWithWindows(bool enable);
 static std::string GetConfigPath();
+static void UpdateWheelBlockHook(bool enable);
+static void OnHotkey(int id);
+static HWND FindScrollTarget();
+static void OnMainWindowEvent(int eventId);
+static bool OnMouseEvent(POINT, DWORD, MSLLHOOKSTRUCT*);
 
-// ─────────── Hidden message window ───────────
-static const wchar_t* kMsgWindowClass = L"ScrollNice_MsgWnd";
-static HWND g_msgWnd = nullptr;
-
+// ─────────── Message window proc (hotkeys + timers) ───────────
 static LRESULT CALLBACK MsgWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_HOTKEY:
@@ -72,7 +83,9 @@ static LRESULT CALLBACK MsgWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     case WM_TIMER: {
         auto& cfg = g_configStore.Get();
         if (wParam == TIMER_ID_HOLD && g_holdDirection != 0) {
-            double holdSec = (GetTickCount() - g_holdStartTime) / 1000.0;
+            ULONGLONG now = GetTickCount64();
+            if (now < g_holdStartTime) return 0;
+            double holdSec = (now - g_holdStartTime) / 1000.0;
             g_scrollEngine.ContinuousScrollTick(g_holdDirection,
                 cfg.scroll.continuous_speed, cfg.scroll.continuous_accel, holdSec);
         }
@@ -87,15 +100,22 @@ static LRESULT CALLBACK MsgWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         switch (LOWORD(wParam)) {
         case sn::WinTray::ID_TOGGLE:
             g_stateMachine.ToggleEnabled();
-            g_tray.SetEnabled(g_stateMachine.IsEnabled());
             g_overlay.SetEnabled(g_stateMachine.IsEnabled());
+            g_tray.SetEnabled(g_stateMachine.IsEnabled());
+            // Sync main window checkbox
+            {
+                auto& cfg = g_configStore.Get();
+                cfg.enabled = g_stateMachine.IsEnabled();
+                g_mainWindow.SyncFromConfig(cfg);
+            }
             break;
         case sn::WinTray::ID_EDIT:
             g_stateMachine.ToggleEdit();
             g_overlay.SetEditMode(g_stateMachine.IsEditing());
             break;
         case sn::WinTray::ID_SETTINGS:
-            OpenSettings();
+            // Tray double-click / settings → show main window
+            g_mainWindow.Show();
             break;
         case sn::WinTray::ID_QUIT:
             PostQuitMessage(0);
@@ -116,21 +136,27 @@ static LRESULT CALLBACK MsgWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 static void OnZoneEvent(const sn::ZoneEventData& e) {
     switch (e.event) {
     case sn::ZoneEvent::LeftClickDown:
+        g_scrollEngine.SetTargetHwnd(FindScrollTarget());
         HandleZoneClick(0, true, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::LeftClickUp:
         HandleZoneClick(0, false, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::RightClickDown:
+        g_scrollEngine.SetTargetHwnd(FindScrollTarget());
         HandleZoneClick(1, true, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::RightClickUp:
         HandleZoneClick(1, false, e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::HoverMove:
+        if (!g_scrollEngine.GetTargetHwnd())
+            g_scrollEngine.SetTargetHwnd(FindScrollTarget());
         HandleZoneHover(e.clickPos, e.zoneWidth, e.zoneHeight);
         break;
     case sn::ZoneEvent::HoverLeave:
+        GetCursorPos(&g_lastOutsidePos);
+        g_scrollEngine.SetTargetHwnd(nullptr);
         StopHoverScroll();
         break;
     default:
@@ -143,136 +169,215 @@ static void HandleZoneClick(int button, bool isDown, POINT clickPos, int zoneW, 
     auto& cfg = g_configStore.Get();
     sn::ScrollMode mode = sn::ScrollModeFromString(cfg.scroll.mode);
 
-    // Mode 3 (HoverAuto): click has no effect
     if (mode == sn::ScrollMode::HoverAuto) return;
 
     if (isDown) {
         int direction = 0;
 
         if (mode == sn::ScrollMode::ClickHold) {
-            // Mode 1: L-button=up, R-button=down (for both click and hold)
             direction = (button == 0) ? 1 : -1;
         } else if (mode == sn::ScrollMode::SplitHold) {
-            // Mode 2: Top half=up, Bottom half=down (for both click and hold)
-            direction = (clickPos.y < zoneH / 2) ? 1 : -1;
+            bool topHalf = (clickPos.y < zoneH / 2);
+            direction = topHalf ? 1 : -1;
         }
 
         if (direction != 0) {
-            // Immediate single-click scroll
-            g_scrollEngine.ClickScroll(direction, cfg.scroll.scroll_amount);
             PlayClickSound();
-
-            // Start hold timer for continuous scroll while button held
-            if (button == 0) g_leftHeld = true; else g_rightHeld = true;
-            g_holdStartTime = GetTickCount() + 300; // 300ms delay before continuous starts
+            g_scrollEngine.ClickScroll(direction, cfg.scroll.scroll_amount);
             StartHoldScroll(direction);
         }
     } else {
-        // Button released
-        if (button == 0) g_leftHeld = false; else g_rightHeld = false;
-        if (!g_leftHeld && !g_rightHeld) {
-            StopHoldScroll();
-        }
+        StopHoldScroll();
     }
 }
 
 // ─────────── Mode 3: Hover logic ───────────
-static void HandleZoneHover(POINT clientPos, int zoneW, int zoneH) {
+static void HandleZoneHover(POINT clientPos, int /*zoneW*/, int zoneH) {
     auto& cfg = g_configStore.Get();
-    if (sn::ScrollModeFromString(cfg.scroll.mode) != sn::ScrollMode::HoverAuto) return;
+    sn::ScrollMode mode = sn::ScrollModeFromString(cfg.scroll.mode);
+    if (mode != sn::ScrollMode::HoverAuto) return;
 
-    int newDir = (clientPos.y < zoneH / 2) ? 1 : -1;
-    if (newDir != g_hoverDirection) {
-        g_hoverDirection = newDir;
-        if (newDir != 0) {
-            StartHoverScroll(newDir);
-        }
+    bool topHalf = (clientPos.y < zoneH / 2);
+    int dir = topHalf ? 1 : -1;
+
+    if (dir != g_hoverDirection) {
+        StopHoverScroll();
+        StartHoverScroll(dir);
     }
 }
 
-// ─────────── Hold & Hover timers ───────────
+// ─────────── Hold scroll timers ───────────
 static void StartHoldScroll(int direction) {
     g_holdDirection = direction;
-    g_scrollEngine.Reset();
-    if (!g_holdTimer && g_msgWnd)
+    g_holdStartTime = GetTickCount64();
+    if (!g_holdTimer && g_msgWnd) {
         g_holdTimer = SetTimer(g_msgWnd, TIMER_ID_HOLD, 16, nullptr);
+    }
 }
 
 static void StopHoldScroll() {
+    g_holdDirection = 0;
+    g_leftHeld = false;
+    g_rightHeld = false;
+    g_scrollEngine.Reset();
     if (g_holdTimer && g_msgWnd) {
         KillTimer(g_msgWnd, TIMER_ID_HOLD);
         g_holdTimer = 0;
     }
-    g_holdDirection = 0;
-    g_scrollEngine.Reset();
 }
 
 static void StartHoverScroll(int direction) {
     g_hoverDirection = direction;
-    if (!g_hoverTimer && g_msgWnd)
+    if (!g_hoverTimer && g_msgWnd) {
         g_hoverTimer = SetTimer(g_msgWnd, TIMER_ID_HOVER, 16, nullptr);
+    }
 }
 
 static void StopHoverScroll() {
+    g_hoverDirection = 0;
+    g_scrollEngine.Reset();
     if (g_hoverTimer && g_msgWnd) {
         KillTimer(g_msgWnd, TIMER_ID_HOVER);
         g_hoverTimer = 0;
     }
-    g_hoverDirection = 0;
 }
 
 // ─────────── Sound ───────────
 static void PlayClickSound() {
     auto& cfg = g_configStore.Get();
     if (!cfg.sound.enabled) return;
-    if (cfg.sound.click_sound.empty()) {
-        MessageBeep(0xFFFFFFFF);
-    } else {
-        std::wstring wp(cfg.sound.click_sound.begin(), cfg.sound.click_sound.end());
-        PlaySoundW(wp.c_str(), nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
-    }
+    MessageBeep(MB_OK);
 }
 
+// ─────────── FindScrollTarget ───────────
+// Finds the scrollable window behind the zone to send WM_MOUSEWHEEL to.
+static HWND FindScrollTarget() {
+    POINT pos = g_lastOutsidePos;
+    if (pos.x < 0 && pos.y < 0) GetCursorPos(&pos);
+
+    HWND zoneHwnd = g_overlay.Handle();
+
+    HWND top = WindowFromPoint(pos);
+    if (top == zoneHwnd || !top) {
+        POINT offsets[4] = {{pos.x+4,pos.y},{pos.x-4,pos.y},
+                            {pos.x,pos.y+4},{pos.x,pos.y-4}};
+        for (auto& op : offsets) {
+            top = WindowFromPoint(op);
+            if (top && top != zoneHwnd) { pos = op; break; }
+        }
+    }
+    if (!top || top == zoneHwnd) return nullptr;
+
+    POINT clientPos = pos;
+    ScreenToClient(top, &clientPos);
+    HWND child = ChildWindowFromPointEx(top, clientPos,
+                    CWP_SKIPTRANSPARENT | CWP_SKIPINVISIBLE | CWP_SKIPDISABLED);
+
+    return (child && child != top) ? child : top;
+}
+
+// ─────────── ApplyConfig ───────────
 static void ApplyConfig() {
     auto& cfg = g_configStore.Get();
     g_zoneManager.LoadFromConfig(cfg.zone);
+
+    g_stateMachine.SetEnabled(cfg.enabled);
+
     g_overlay.SetScrollMode(sn::ScrollModeFromString(cfg.scroll.mode));
     g_overlay.SetPosition(cfg.zone.x, cfg.zone.y);
     g_overlay.SetSize(cfg.zone.width, cfg.zone.height);
     g_overlay.SetOpacity(cfg.zone.opacity);
     g_overlay.SetLocked(cfg.zone.locked);
-    g_overlay.SetEnabled(cfg.enabled);
-    g_stateMachine.SetEnabled(cfg.enabled);
-    g_tray.SetEnabled(cfg.enabled);
+    g_overlay.SetEnabled(g_stateMachine.IsEnabled());
+
+    g_tray.SetEnabled(g_stateMachine.IsEnabled());
+    g_tray.SetModeName(cfg.scroll.mode);
     SetStartWithWindows(cfg.start_with_windows);
+    UpdateWheelBlockHook(cfg.wheel_block);
+
+    if (g_msgWnd) {
+        g_hotkeys.Unregister(g_msgWnd);
+        g_hotkeys.Register(g_msgWnd,
+            cfg.hotkeys.toggle_enabled,
+            cfg.hotkeys.toggle_edit,
+            "",
+            cfg.hotkeys.toggle_wheel,
+            OnHotkey);
+    }
 }
 
-static void OpenSettings() {
+// ─────────── Main window events ───────────
+static void OnMainWindowEvent(int eventId) {
     auto& cfg = g_configStore.Get();
-    // Sync current zone position back to config
-    cfg.zone.x = g_overlay.Config().x;
-    cfg.zone.y = g_overlay.Config().y;
-    cfg.zone.width = g_overlay.Config().width;
-    cfg.zone.height = g_overlay.Config().height;
 
-    g_settingsDlg.Show(g_hInstance, g_msgWnd, cfg, [](const sn::AppConfig& newCfg) {
-        g_configStore.Get() = newCfg;
+    switch (eventId) {
+    case sn::WinMainWindow::EVT_ZONE_TOGGLED: {
+        bool checked = (IsDlgButtonChecked(g_mainWindow.Handle(), 101) == BST_CHECKED);
+        cfg.enabled = checked;
+        g_stateMachine.SetEnabled(checked);
+        g_overlay.SetEnabled(checked);
+        g_tray.SetEnabled(checked);
+        break;
+    }
+    case sn::WinMainWindow::EVT_MODE_CHANGED: {
+        int idx = (int)SendDlgItemMessage(g_mainWindow.Handle(), 102, CB_GETCURSEL, 0, 0);
+        if (idx == 0) cfg.scroll.mode = "click_hold";
+        if (idx == 1) cfg.scroll.mode = "split_hold";
+        if (idx == 2) cfg.scroll.mode = "hover_auto";
+        g_overlay.SetScrollMode(sn::ScrollModeFromString(cfg.scroll.mode));
+        g_tray.SetModeName(cfg.scroll.mode);
+        StopHoldScroll();
+        StopHoverScroll();
+        break;
+    }
+    case sn::WinMainWindow::EVT_OPACITY_CHANGED: {
+        int pos = (int)SendDlgItemMessage(g_mainWindow.Handle(), 114, TBM_GETPOS, 0, 0);
+        cfg.zone.opacity = pos / 100.0;
+        g_overlay.SetOpacity(cfg.zone.opacity);
+        break;
+    }
+    case sn::WinMainWindow::EVT_SAVE: {
+        // Already read into cfg by WinMainWindow::ReadControls
         g_configStore.Save(g_configPath);
         StopHoldScroll();
         StopHoverScroll();
         ApplyConfig();
-    });
+        g_mainWindow.SyncFromConfig(cfg);
+        break;
+    }
+    case sn::WinMainWindow::EVT_RESET: {
+        g_configStore.Save(g_configPath);
+        StopHoldScroll();
+        StopHoverScroll();
+        ApplyConfig();
+        break;
+    }
+    case sn::WinMainWindow::EVT_MINIMIZE:
+        // X was pressed — window already hidden by WinMainWindow
+        break;
+    }
 }
 
+// ─────────── Config path ───────────
+static std::string GetConfigPath() {
+    wchar_t buf[MAX_PATH];
+    GetModuleFileNameW(nullptr, buf, MAX_PATH);
+    std::filesystem::path p(buf);
+    return (p.parent_path() / "config.json").string();
+}
+
+// ─────────── Start with Windows ───────────
 static void SetStartWithWindows(bool enable) {
     HKEY hKey;
-    const wchar_t* runKey = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, runKey, 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS)
+    {
         if (enable) {
-            wchar_t exePath[MAX_PATH];
-            GetModuleFileNameW(nullptr, exePath, MAX_PATH);
-            RegSetValueExW(hKey, L"ScrollNice", 0, REG_SZ, (BYTE*)exePath,
-                          (DWORD)(wcslen(exePath) + 1) * sizeof(wchar_t));
+            wchar_t path[MAX_PATH];
+            GetModuleFileNameW(nullptr, path, MAX_PATH);
+            RegSetValueExW(hKey, L"ScrollNice", 0, REG_SZ,
+                (BYTE*)path, (DWORD)(wcslen(path) + 1) * sizeof(wchar_t));
         } else {
             RegDeleteValueW(hKey, L"ScrollNice");
         }
@@ -280,23 +385,21 @@ static void SetStartWithWindows(bool enable) {
     }
 }
 
-static std::string GetConfigPath() {
-    wchar_t exePath[MAX_PATH];
-    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
-    std::filesystem::path p(exePath);
-    p = p.parent_path() / "config.json";
-    return p.string();
+// ─────────── Wheel block hook ───────────
+static bool OnMouseEvent(POINT, DWORD, MSLLHOOKSTRUCT*) {
+    // Wheel events blocked by hook — return true to eat the event
+    return true;
 }
 
-// ─────────── Mouse hook (wheel block) ───────────
-static bool OnMouseEvent(POINT, DWORD mouseMsg, MSLLHOOKSTRUCT*) {
-    if (mouseMsg == WM_MOUSEWHEEL || mouseMsg == WM_MOUSEHWHEEL) {
-        if (g_configStore.Get().wheel_block) {
-            if (GetAsyncKeyState(VK_MENU) & 0x8000) return false;
-            return true;
-        }
+static void UpdateWheelBlockHook(bool enable) {
+    auto& hook = sn::WinMouseHook::Instance();
+    if (enable) {
+        if (!hook.IsInstalled())
+            hook.Install(OnMouseEvent);
+    } else {
+        if (hook.IsInstalled())
+            hook.Uninstall();
     }
-    return false;
 }
 
 // ─────────── Hotkeys ───────────
@@ -306,6 +409,11 @@ static void OnHotkey(int id) {
         g_stateMachine.ToggleEnabled();
         g_tray.SetEnabled(g_stateMachine.IsEnabled());
         g_overlay.SetEnabled(g_stateMachine.IsEnabled());
+        {
+            auto& cfg = g_configStore.Get();
+            cfg.enabled = g_stateMachine.IsEnabled();
+            g_mainWindow.SyncFromConfig(cfg);
+        }
         break;
     case sn::WinHotkeys::HK_TOGGLE_EDIT:
         g_stateMachine.ToggleEdit();
@@ -314,6 +422,9 @@ static void OnHotkey(int id) {
     case sn::WinHotkeys::HK_TOGGLE_WHEEL: {
         auto& cfg = g_configStore.Get();
         cfg.wheel_block = !cfg.wheel_block;
+        UpdateWheelBlockHook(cfg.wheel_block);
+        g_configStore.Save(g_configPath);
+        g_mainWindow.SyncFromConfig(cfg);
         break;
     }
     }
@@ -325,7 +436,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 
     HANDLE hMutex = CreateMutexW(nullptr, TRUE, L"ScrollNice_SingleInstance");
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        MessageBoxW(nullptr, L"ScrollNice is already running.", L"ScrollNice", MB_OK | MB_ICONINFORMATION);
+        // Find existing main window and bring it to front
+        HWND existing = FindWindowW(L"ScrollNice_MainWindow", nullptr);
+        if (existing) {
+            ShowWindow(existing, SW_SHOW);
+            SetForegroundWindow(existing);
+        } else {
+            MessageBoxW(nullptr, L"ScrollNice is already running.", L"ScrollNice", MB_OK | MB_ICONINFORMATION);
+        }
         return 0;
     }
 
@@ -338,7 +456,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     }
     auto& cfg = g_configStore.Get();
 
-    // Message window
+    // ─── Hidden message window (for hotkeys + scroll timers) ───
     WNDCLASSEXW wc = {};
     wc.cbSize        = sizeof(wc);
     wc.lpfnWndProc   = MsgWndProc;
@@ -348,48 +466,49 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     g_msgWnd = CreateWindowExW(0, kMsgWindowClass, L"ScrollNice_Msg",
         0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, hInstance, nullptr);
 
-    // Init core
-    g_zoneManager.LoadFromConfig(cfg.zone);
-    g_stateMachine.SetEnabled(cfg.enabled);
+    // ─── Main window (visible GUI) ───
+    g_mainWindow.Create(hInstance, cfg,
+        // onSave callback
+        [](const sn::AppConfig& newCfg) {
+            g_configStore.Get() = newCfg;
+            g_configStore.Save(g_configPath);
+            StopHoldScroll();
+            StopHoverScroll();
+            ApplyConfig();
+        },
+        // onEvent callback
+        OnMainWindowEvent
+    );
 
-    // Create zone overlay window
+    // ─── Zone overlay ───
     g_overlay.Create(hInstance, cfg.zone, OnZoneEvent);
-    g_overlay.SetScrollMode(sn::ScrollModeFromString(cfg.scroll.mode));
-    if (!cfg.enabled) g_overlay.Hide();
 
-    // Tray icon
+    // ─── Tray icon ───
     g_tray.Create(g_msgWnd, hInstance, [](sn::WinTray::MenuItem item) {
         if (g_msgWnd) PostMessage(g_msgWnd, WM_COMMAND, MAKEWPARAM(item, 0), 0);
     });
 
-    // Hotkeys
-    g_hotkeys.Register(g_msgWnd,
-        cfg.hotkeys.toggle_enabled,
-        cfg.hotkeys.toggle_edit,
-        "",
-        cfg.hotkeys.toggle_wheel,
-        OnHotkey);
+    // ─── Apply config (registers hotkeys, hooks, shows overlay/tray state) ───
+    ApplyConfig();
 
-    // Wheel block hook
-    if (cfg.wheel_block) {
-        sn::WinMouseHook::Instance().Install(OnMouseEvent);
-    }
+    // ─── Show main window ───
+    g_mainWindow.Show();
 
-    // Message loop
+    // ─── Message loop ───
     MSG msg;
     while (GetMessage(&msg, nullptr, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
-    // Cleanup
+    // ─── Cleanup ───
     StopHoldScroll();
     StopHoverScroll();
     sn::WinMouseHook::Instance().Uninstall();
     g_hotkeys.Unregister(g_msgWnd);
     g_tray.Destroy();
 
-    // Save zone position
+    // Save zone position on exit
     auto& exitCfg = g_configStore.Get();
     exitCfg.zone.x = g_overlay.Config().x;
     exitCfg.zone.y = g_overlay.Config().y;
@@ -398,6 +517,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     g_configStore.Save(g_configPath);
 
     g_overlay.Destroy();
+    g_mainWindow.Destroy();
     DestroyWindow(g_msgWnd);
     ReleaseMutex(hMutex);
     CloseHandle(hMutex);

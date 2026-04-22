@@ -37,7 +37,7 @@
 | 🔒 **No Telemetry** | No data collected, no ads, completely offline |
 | ⌨️ **Hotkeys** | Ctrl+Alt+S to toggle, Ctrl+Alt+E for edit mode. Fully customizable |
 | 🎨 **Customizable** | Resize/move zones, adjust opacity, sensitivity, edit click sounds |
-| 🚫 **Wheel Block** | Optionally block physical wheel scroll events globally |
+| 🚫 **Wheel Block** | Toggle blocking of physical wheel scroll events (hold `Alt` to bypass) |
 | 🌐 **Chrome Extension** | Lightweight browser version, load as unpacked |
 | 🔄 **Portable** | No installation required, just extract the zip and run the `.exe` |
 
@@ -94,7 +94,6 @@ Requirements: MSVC 2019+ or MinGW, CMake ≥ 3.20
 |--------|--------|
 | `Ctrl+Alt+S` | Enable / Disable ScrollNice (Panic Key) |
 | `Ctrl+Alt+E` | Toggle Edit Mode (Drag/Resize Zones) |
-| `Ctrl+Alt+Z` | Toggle the next zone |
 | `Ctrl+Alt+W` | Toggle physical wheel blocking |
 
 > You can fully customize these hotkeys in `config.json`.
@@ -107,52 +106,36 @@ Requirements: MSVC 2019+ or MinGW, CMake ≥ 3.20
 {
   "version": 1,
   "enabled": true,
-  "wheel_block_mode": "off",
-  "bypass_modifier": "Alt",
+  "start_with_windows": false,
+  "wheel_block": false,
+  "zone": {
+    "x": 60,
+    "y": 100,
+    "width": 120,
+    "height": 200,
+    "opacity": 0.30,
+    "color": "#3498db",
+    "cover_image": "",
+    "locked": false
+  },
+  "scroll": {
+    "mode": "click_hold",
+    "scroll_amount": 300,
+    "continuous_speed": 8,
+    "continuous_accel": 3,
+    "hover_speed": 6
+  },
+  "sound": {
+    "enabled": true,
+    "click_sound": ""
+  },
   "hotkeys": {
     "toggle_enabled":  "Ctrl+Alt+S",
     "toggle_edit":     "Ctrl+Alt+E",
-    "toggle_zone":     "Ctrl+Alt+Z",
     "toggle_wheel":    "Ctrl+Alt+W"
-  },
-  "engine": {
-    "sensitivity":      1.2,
-    "dead_zone_px":     2,
-    "smoothing":        0.85,
-    "accel_power":      1.35,
-    "tick_ms":          10,
-    "max_events_per_sec": 120
-  },
-  "zones": [
-    {
-      "id":          "floating_zone",
-      "type":        "floating",
-      "x": 100, "y": 100,
-      "width": 120, "height": 200,
-      "mode":        "click_step",
-      "locked":      false
-    }
-  ],
-  "exclusions": {
-    "auto_suspend_fullscreen": true,
-    "process_names": []
-  },
-  "ui": {
-    "visible":      true,
-    "hover_alpha":  0.15,
-    "active_alpha": 0.35
   }
 }
 ```
-
-### `wheel_block_mode` Options
-
-| Value | Meaning |
-|-------|---------|
-| `off` | Do not block physical wheel scrolling (default) |
-| `global` | Block physical wheel scrolling system-wide |
-| `outside_zone_only` | Allow wheel scrolling ONLY when inside a zone |
-| `inside_zone_only` | Block wheel scrolling ONLY when inside a zone |
 
 ---
 
