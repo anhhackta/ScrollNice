@@ -30,6 +30,8 @@ enum {
     IDC_MODE_SPLIT_HOLD = 111,
     IDC_MODE_HOVER_AUTO = 112,
     IDC_SCROLL_AMOUNT  = 120,
+    IDC_CONTINUOUS_SPEED = 121,
+    IDC_HOVER_SPEED    = 122,
     IDC_ZONE_WIDTH     = 130,
     IDC_ZONE_HEIGHT    = 131,
     IDC_ZONE_OPACITY   = 132,
@@ -60,7 +62,12 @@ void WinSettings::Show(HINSTANCE hInst, HWND parent, AppConfig& cfg, SettingsCal
     hBrushBg      = CreateSolidBrush(CLR_BG);
     hBrushSurface = CreateSolidBrush(CLR_SURFACE);
 
-    const int DW = 400, DH = 548;
+    // Get DPI for scaling
+    UINT dpi = GetDpiForWindow(parent ? parent : GetDesktopWindow());
+    int scale = (dpi == 0) ? 100 : dpi;
+    float scaleFactor = scale / 96.0f;
+
+    const int DW = (int)(400 * scaleFactor), DH = (int)(580 * scaleFactor);
     RECT parentRect;
     GetWindowRect(parent ? parent : GetDesktopWindow(), &parentRect);
     int dx = (parentRect.left + parentRect.right  - DW) / 2;
@@ -80,6 +87,9 @@ void WinSettings::Show(HINSTANCE hInst, HWND parent, AppConfig& cfg, SettingsCal
         L"ScrollNice_Settings", L"ScrollNice - Settings",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
         dx, dy, DW, DH, parent, nullptr, hInst, nullptr);
+
+    // Store scale factor for use in control creation
+    scaleFactor_ = scaleFactor;
 
     InitControls(dlg_);
 
@@ -118,9 +128,10 @@ void WinSettings::InitControls(HWND dlg) {
     SetClassLongPtrW(dlg, GCLP_HBRBACKGROUND, (LONG_PTR)hBrushBg);
     InvalidateRect(dlg, nullptr, TRUE);
 
-    // Bold font for the dialog
+    // Bold font for the dialog (scaled by DPI)
     if (!hFont_) {
-        hFont_ = CreateFontW(14, 0, 0, 0, FW_NORMAL, 0, 0, 0,
+        int fontSize = (int)(14 * scaleFactor_);
+        hFont_ = CreateFontW(fontSize, 0, 0, 0, FW_NORMAL, 0, 0, 0,
                                DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                                CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
     }
@@ -148,11 +159,19 @@ void WinSettings::InitControls(HWND dlg) {
     y += 22 + 12;
 
     // ═══ Sensitivity ═══
-    HWND grp3 = mk(L"BUTTON", L"  Sensitivity", BS_GROUPBOX, 10, y, PW, 46, 0); y += 24;
+    HWND grp3 = mk(L"BUTTON", L"  Sensitivity", BS_GROUPBOX, 10, y, PW, 70, 0); y += 24;
     SendMessage(grp3, WM_SETFONT, (WPARAM)hFont_, TRUE);
     mk(L"STATIC", L"Scroll Amount:", 0, 22, y, 100, 18, 0);
     mk(L"EDIT",   L"", WS_BORDER | ES_NUMBER, 130, y - 2, 60, 22, IDC_SCROLL_AMOUNT);
     mk(L"STATIC", L"px / click", 0, 196, y, 80, 18, 0);
+    y += 26;
+    mk(L"STATIC", L"Continuous Speed:", 0, 22, y, 120, 18, 0);
+    mk(L"EDIT",   L"", WS_BORDER | ES_NUMBER, 150, y - 2, 60, 22, IDC_CONTINUOUS_SPEED);
+    mk(L"STATIC", L"px/tick", 0, 216, y, 60, 18, 0);
+    y += 26;
+    mk(L"STATIC", L"Hover Speed:", 0, 22, y, 100, 18, 0);
+    mk(L"EDIT",   L"", WS_BORDER | ES_NUMBER, 130, y - 2, 60, 22, IDC_HOVER_SPEED);
+    mk(L"STATIC", L"px/tick", 0, 196, y, 60, 18, 0);
     y += 22 + 12;
 
     // ═══ Zone ═══
@@ -211,6 +230,8 @@ void WinSettings::InitControls(HWND dlg) {
         CheckRadioButton(dlg, IDC_MODE_CLICK_HOLD, IDC_MODE_HOVER_AUTO, modeId);
 
         SetDlgItemInt(dlg, IDC_SCROLL_AMOUNT, cfg_->scroll.scroll_amount, FALSE);
+        SetDlgItemInt(dlg, IDC_CONTINUOUS_SPEED, cfg_->scroll.continuous_speed, FALSE);
+        SetDlgItemInt(dlg, IDC_HOVER_SPEED, cfg_->scroll.hover_speed, FALSE);
         SetDlgItemInt(dlg, IDC_ZONE_WIDTH,    cfg_->zone.width,           FALSE);
         SetDlgItemInt(dlg, IDC_ZONE_HEIGHT,   cfg_->zone.height,          FALSE);
 
@@ -243,6 +264,12 @@ void WinSettings::ReadControls(HWND dlg) {
 
     cfg_->scroll.scroll_amount = GetDlgItemInt(dlg, IDC_SCROLL_AMOUNT, nullptr, FALSE);
     if (cfg_->scroll.scroll_amount < 10) cfg_->scroll.scroll_amount = 10;
+
+    cfg_->scroll.continuous_speed = GetDlgItemInt(dlg, IDC_CONTINUOUS_SPEED, nullptr, FALSE);
+    if (cfg_->scroll.continuous_speed < 1) cfg_->scroll.continuous_speed = 1;
+
+    cfg_->scroll.hover_speed = GetDlgItemInt(dlg, IDC_HOVER_SPEED, nullptr, FALSE);
+    if (cfg_->scroll.hover_speed < 1) cfg_->scroll.hover_speed = 1;
 
     cfg_->zone.width  = GetDlgItemInt(dlg, IDC_ZONE_WIDTH,  nullptr, FALSE);
     cfg_->zone.height = GetDlgItemInt(dlg, IDC_ZONE_HEIGHT, nullptr, FALSE);

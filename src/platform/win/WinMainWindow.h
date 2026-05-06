@@ -69,8 +69,10 @@ private:
     AppConfig* cfg_     = nullptr;
     HFONT      hFont_   = nullptr;
     HFONT      hFontBold_ = nullptr;
+    HFONT      hFontSmall_ = nullptr;
     HBRUSH     hBrushBg_  = nullptr;
     HBRUSH     hBrushSurface_ = nullptr;
+    HBRUSH     hBrushCard_ = nullptr;
 
     MainWindowSaveCallback  onSave_;
     MainWindowEventCallback onEvent_;
