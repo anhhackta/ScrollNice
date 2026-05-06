@@ -257,22 +257,35 @@ static HWND FindScrollTarget() {
 
     HWND zoneHwnd = g_overlay.Handle();
 
+    // First try to get window at cursor position
     HWND top = WindowFromPoint(pos);
+
+    // If we got the zone itself, try nearby positions
     if (top == zoneHwnd || !top) {
-        POINT offsets[4] = {{pos.x+4,pos.y},{pos.x-4,pos.y},
-                            {pos.x,pos.y+4},{pos.x,pos.y-4}};
+        POINT offsets[8] = {
+            {pos.x+8,pos.y},{pos.x-8,pos.y},
+            {pos.x,pos.y+8},{pos.x,pos.y-8},
+            {pos.x+8,pos.y+8},{pos.x-8,pos.y-8},
+            {pos.x+8,pos.y-8},{pos.x-8,pos.y+8}
+        };
         for (auto& op : offsets) {
             top = WindowFromPoint(op);
             if (top && top != zoneHwnd) { pos = op; break; }
         }
     }
+
+    // If still no valid window, return nullptr
     if (!top || top == zoneHwnd) return nullptr;
 
+    // Convert to client coordinates for child window search
     POINT clientPos = pos;
     ScreenToClient(top, &clientPos);
+
+    // Find the child window at the position (skip transparent/invisible/disabled)
     HWND child = ChildWindowFromPointEx(top, clientPos,
                     CWP_SKIPTRANSPARENT | CWP_SKIPINVISIBLE | CWP_SKIPDISABLED);
 
+    // Return child if valid and different from parent, otherwise return parent
     return (child && child != top) ? child : top;
 }
 
@@ -297,12 +310,14 @@ static void ApplyConfig() {
 
     if (g_msgWnd) {
         g_hotkeys.Unregister(g_msgWnd);
-        g_hotkeys.Register(g_msgWnd,
+        int hotkeyCount = g_hotkeys.Register(g_msgWnd,
             cfg.hotkeys.toggle_enabled,
             cfg.hotkeys.toggle_edit,
             "",
             cfg.hotkeys.toggle_wheel,
             OnHotkey);
+        // Log if hotkey registration failed (optional - could add logging system)
+        (void)hotkeyCount;
     }
 }
 
@@ -369,20 +384,23 @@ static std::string GetConfigPath() {
 // ─────────── Start with Windows ───────────
 static void SetStartWithWindows(bool enable) {
     HKEY hKey;
-    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+    LONG result = RegOpenKeyExW(HKEY_CURRENT_USER,
         L"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-        0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS)
-    {
+        0, KEY_SET_VALUE, &hKey);
+    if (result == ERROR_SUCCESS) {
         if (enable) {
             wchar_t path[MAX_PATH];
-            GetModuleFileNameW(nullptr, path, MAX_PATH);
-            RegSetValueExW(hKey, L"ScrollNice", 0, REG_SZ,
-                (BYTE*)path, (DWORD)(wcslen(path) + 1) * sizeof(wchar_t));
+            DWORD len = GetModuleFileNameW(nullptr, path, MAX_PATH);
+            if (len > 0 && len < MAX_PATH) {
+                RegSetValueExW(hKey, L"ScrollNice", 0, REG_SZ,
+                    (BYTE*)path, (DWORD)(wcslen(path) + 1) * sizeof(wchar_t));
+            }
         } else {
             RegDeleteValueW(hKey, L"ScrollNice");
         }
         RegCloseKey(hKey);
     }
+    // If registry access fails, we silently continue - this is not critical functionality
 }
 
 // ─────────── Wheel block hook ───────────
@@ -394,11 +412,16 @@ static bool OnMouseEvent(POINT, DWORD, MSLLHOOKSTRUCT*) {
 static void UpdateWheelBlockHook(bool enable) {
     auto& hook = sn::WinMouseHook::Instance();
     if (enable) {
-        if (!hook.IsInstalled())
-            hook.Install(OnMouseEvent);
+        if (!hook.IsInstalled()) {
+            if (!hook.Install(OnMouseEvent)) {
+                // Hook installation failed - could log this
+                // For now, we'll just continue without the hook
+            }
+        }
     } else {
-        if (hook.IsInstalled())
+        if (hook.IsInstalled()) {
             hook.Uninstall();
+        }
     }
 }
 
@@ -452,6 +475,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 
     g_configPath = GetConfigPath();
     if (!g_configStore.Load(g_configPath)) {
+        // Config load failed - use defaults and save
         g_configStore.Save(g_configPath);
     }
     auto& cfg = g_configStore.Get();
@@ -462,12 +486,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
     wc.lpfnWndProc   = MsgWndProc;
     wc.hInstance      = hInstance;
     wc.lpszClassName  = kMsgWindowClass;
-    RegisterClassExW(&wc);
+    if (!RegisterClassExW(&wc)) {
+        MessageBoxW(nullptr, L"Failed to register message window class.", L"ScrollNice Error", MB_OK | MB_ICONERROR);
+        return 1;
+    }
     g_msgWnd = CreateWindowExW(0, kMsgWindowClass, L"ScrollNice_Msg",
         0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, hInstance, nullptr);
+    if (!g_msgWnd) {
+        MessageBoxW(nullptr, L"Failed to create message window.", L"ScrollNice Error", MB_OK | MB_ICONERROR);
+        return 1;
+    }
 
     // ─── Main window (visible GUI) ───
-    g_mainWindow.Create(hInstance, cfg,
+    if (!g_mainWindow.Create(hInstance, cfg,
         // onSave callback
         [](const sn::AppConfig& newCfg) {
             g_configStore.Get() = newCfg;
@@ -478,15 +509,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
         },
         // onEvent callback
         OnMainWindowEvent
-    );
+    )) {
+        MessageBoxW(nullptr, L"Failed to create main window.", L"ScrollNice Error", MB_OK | MB_ICONERROR);
+        DestroyWindow(g_msgWnd);
+        return 1;
+    }
 
     // ─── Zone overlay ───
-    g_overlay.Create(hInstance, cfg.zone, OnZoneEvent);
+    if (!g_overlay.Create(hInstance, cfg.zone, OnZoneEvent)) {
+        MessageBoxW(nullptr, L"Failed to create zone overlay.", L"ScrollNice Error", MB_OK | MB_ICONERROR);
+        g_mainWindow.Destroy();
+        DestroyWindow(g_msgWnd);
+        return 1;
+    }
 
     // ─── Tray icon ───
-    g_tray.Create(g_msgWnd, hInstance, [](sn::WinTray::MenuItem item) {
+    if (!g_tray.Create(g_msgWnd, hInstance, [](sn::WinTray::MenuItem item) {
         if (g_msgWnd) PostMessage(g_msgWnd, WM_COMMAND, MAKEWPARAM(item, 0), 0);
-    });
+    })) {
+        MessageBoxW(nullptr, L"Failed to create tray icon.", L"ScrollNice Error", MB_OK | MB_ICONERROR);
+        g_overlay.Destroy();
+        g_mainWindow.Destroy();
+        DestroyWindow(g_msgWnd);
+        return 1;
+    }
 
     // ─── Apply config (registers hotkeys, hooks, shows overlay/tray state) ───
     ApplyConfig();

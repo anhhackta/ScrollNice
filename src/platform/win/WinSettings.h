@@ -24,6 +24,7 @@ private:
     HINSTANCE        hInst_  = nullptr;  // needed for child control creation
     bool             done_   = false;    // modal loop exit flag
     HFONT            hFont_  = nullptr;  // dialog font (owned)
+    float            scaleFactor_ = 1.0f;  // DPI scaling factor
 };
 
 } // namespace sn

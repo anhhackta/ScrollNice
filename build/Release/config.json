@@ -9,7 +9,7 @@
     "continuous_accel": 2,
     "continuous_speed": 10,
     "hover_speed": 6,
-    "mode": "hover_auto",
+    "mode": "click_hold",
     "scroll_amount": 300
   },
   "sound": {
@@ -18,13 +18,13 @@
   },
   "start_with_windows": false,
   "version": 1,
-  "wheel_block": false,
+  "wheel_block": true,
   "zone": {
     "color": "#3498db",
     "cover_image": "",
     "height": 133,
     "locked": true,
-    "opacity": 0.27,
+    "opacity": 1.0,
     "width": 228,
     "x": 272,
     "y": 138
