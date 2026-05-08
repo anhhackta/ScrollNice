@@ -43,9 +43,11 @@ void WinOverlay::DestroyGDI() {
     del(borderPen_);
     del(editPen_);
     del(dashPen_);
+    del(glowPen_);
     del(topBrush_);
     del(botBrush_);
     del(editBrush_);
+    del(hoverBrush_);
 }
 
 // ─────── Create / Destroy ───────
@@ -142,8 +144,8 @@ void WinOverlay::Paint(HDC hdc, int w, int h) {
     HBITMAP memBmp = CreateCompatibleBitmap(hdc, w, h);
     HBITMAP oldBmp = (HBITMAP)SelectObject(memDC, memBmp);
 
-    // ── Background ──
-    COLORREF bgColor = editMode_ ? RGB(255, 140, 0) : HexToColorRef(cfg_.color);
+    // ── Background with gradient ──
+    COLORREF bgColor = editMode_ ? RGB(255, 165, 0) : HexToColorRef(cfg_.color);
 
     if (coverBmp_ && !editMode_) {
         HDC tmpDC   = CreateCompatibleDC(memDC);
@@ -152,21 +154,40 @@ void WinOverlay::Paint(HDC hdc, int w, int h) {
         SelectObject(tmpDC, old);
         DeleteDC(tmpDC);
     } else {
+        // Create gradient background
+        RECT rc = {0, 0, w, h};
         HBRUSH bgBrush = CreateSolidBrush(bgColor);
-        RECT   rc      = {0, 0, w, h};
         FillRect(memDC, &rc, bgBrush);
         DeleteObject(bgBrush);
+
+        // Add subtle gradient overlay
+        if (!editMode_) {
+            HBRUSH gradBrush = CreateSolidBrush(RGB(255, 255, 255));
+            RECT topGrad = {0, 0, w, h/3};
+            FillRect(memDC, &topGrad, gradBrush);
+            DeleteObject(gradBrush);
+        }
     }
 
     // ── Mode visuals ──
     DrawModeVisuals(memDC, w, h);
 
-    // ── Rounded border ──
+    // ── Enhanced rounded border with glow ──
     HPEN   pen      = editMode_ ? editPen_ : borderPen_;
     HPEN   oldPen   = (HPEN)SelectObject(memDC, pen);
     HBRUSH nullBrush = (HBRUSH)GetStockObject(NULL_BRUSH);
     HBRUSH oldBrush  = (HBRUSH)SelectObject(memDC, nullBrush);
-    RoundRect(memDC, 0, 0, w, h, 16, 16);
+
+    // Draw outer glow
+    if (!editMode_ && enabled_) {
+        HPEN glowPen = CreatePen(PS_SOLID, 4, RGB(59, 130, 246));
+        HPEN oldGlow = (HPEN)SelectObject(memDC, glowPen);
+        RoundRect(memDC, 2, 2, w-2, h-2, 18, 18);
+        SelectObject(memDC, oldGlow);
+        DeleteObject(glowPen);
+    }
+
+    RoundRect(memDC, 0, 0, w, h, 18, 18);
     SelectObject(memDC, oldPen);
     SelectObject(memDC, oldBrush);
 
@@ -175,8 +196,8 @@ void WinOverlay::Paint(HDC hdc, int w, int h) {
         SetBkMode(memDC, TRANSPARENT);
         SetTextColor(memDC, RGB(255, 255, 255));
         HFONT old = (HFONT)SelectObject(memDC, fontSmall_);
-        RECT  lockR = {w - 22, 2, w - 2, 20};
-        DrawTextW(memDC, L"[L]", -1, &lockR, DT_VCENTER | DT_SINGLELINE);
+        RECT  lockR = {w - 28, 4, w - 4, 24};
+        DrawTextW(memDC, L"🔒", -1, &lockR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         SelectObject(memDC, old);
     }
 
@@ -194,20 +215,31 @@ void WinOverlay::Paint(HDC hdc, int w, int h) {
 }
 
 void WinOverlay::DrawResizeGrip(HDC hdc, int w, int h) {
-    // Draw 3 diagonal dots in bottom-right corner (Windows standard resize grip style)
-    const int DOT = 3, GAP = 4;
+    // Enhanced resize grip with better visual design
+    const int DOT = 4, GAP = 5;
     HBRUSH wBrush = CreateSolidBrush(RGB(255, 255, 255));
-    HBRUSH dBrush = CreateSolidBrush(RGB(120, 120, 120));
+    HBRUSH dBrush = CreateSolidBrush(RGB(100, 100, 100));
+    HBRUSH sBrush = CreateSolidBrush(RGB(59, 130, 246));
+
     for (int i = 0; i < 3; i++) {
-        int ox = w - 5 - i * (DOT + GAP);
-        int oy = h - 5 - i * (DOT + GAP);
+        int ox = w - 6 - i * (DOT + GAP);
+        int oy = h - 6 - i * (DOT + GAP);
+
+        // Shadow
+        RECT rS = {ox + 2, oy + 2, ox + DOT + 2, oy + DOT + 2};
+        FillRect(hdc, &rS, dBrush);
+
+        // Main dot
         RECT r1 = {ox, oy, ox + DOT, oy + DOT};
-        RECT r2 = {ox + 1, oy + 1, ox + DOT + 1, oy + DOT + 1};
-        FillRect(hdc, &r2, dBrush);
         FillRect(hdc, &r1, wBrush);
+
+        // Accent dot (inner)
+        RECT r2 = {ox + 1, oy + 1, ox + DOT - 1, oy + DOT - 1};
+        FillRect(hdc, &r2, sBrush);
     }
     DeleteObject(wBrush);
     DeleteObject(dBrush);
+    DeleteObject(sBrush);
 }
 
 void WinOverlay::DrawModeVisuals(HDC hdc, int w, int h) {
@@ -224,10 +256,10 @@ void WinOverlay::DrawModeVisuals(HDC hdc, int w, int h) {
         RECT botR = {0, h / 2, w, 3 * h / 4};
         DrawTextW(hdc, L"\u25BC", -1, &botR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-        // Label at bottom
+        // Label at bottom with better styling
         SelectObject(hdc, fontSmall_);
-        SetTextColor(hdc, RGB(200, 200, 200));
-        RECT labelR = {2, h - 18, w - 2, h - 2};
+        SetTextColor(hdc, RGB(220, 220, 220));
+        RECT labelR = {4, h - 22, w - 4, h - 4};
         DrawTextW(hdc, L"L\u2191  R\u2193", -1, &labelR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
         SelectObject(hdc, old);
@@ -247,7 +279,7 @@ void WinOverlay::DrawModeVisuals(HDC hdc, int w, int h) {
         RECT topR = {0, 4, w, h / 2 - 2};
         DrawTextW(hdc, L"\u25B2", -1, &topR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-        RECT botR = {0, h / 2 + 2, w, h - 4};
+        RECT botR = {0, h / 2 + 4, w, h - 4};
         DrawTextW(hdc, L"\u25BC", -1, &botR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
         SelectObject(hdc, old);
@@ -267,14 +299,20 @@ void WinOverlay::DrawModeVisuals(HDC hdc, int w, int h) {
         LineTo(hdc, w - 8, h / 2);
         SelectObject(hdc, oldPen);
 
-        // Labels
+        // Labels with shadow
         HFONT old = (HFONT)SelectObject(hdc, fontBold_);
-        SetTextColor(hdc, RGB(255, 255, 255));
 
-        RECT topR = {0, 8,   w, h / 2 - 4};
+        SetTextColor(hdc, RGB(0, 0, 0));
+        RECT topRS = {3, 10, w + 3, h / 2 - 6 + 3};
+        DrawTextW(hdc, L"\u25B2 HOVER", -1, &topRS, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        RECT botRS = {3, h / 2 + 8 + 3, w + 3, h - 10 + 3};
+        DrawTextW(hdc, L"\u25BC HOVER", -1, &botRS, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        SetTextColor(hdc, RGB(255, 255, 255));
+        RECT topR = {0, 8,   w, h / 2 - 6};
         DrawTextW(hdc, L"\u25B2 HOVER", -1, &topR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-        RECT botR = {0, h / 2 + 4, w, h - 8};
+        RECT botR = {0, h / 2 + 8, w, h - 10};
         DrawTextW(hdc, L"\u25BC HOVER", -1, &botR, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
         SelectObject(hdc, old);
