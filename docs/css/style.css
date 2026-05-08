@@ -5,16 +5,16 @@
 
 /* ── Variables ── */
 :root {
-    --bg: #0a0a12;
-    --bg-mid: #0f0f1a;
+    --bg: #071018;
+    --bg-mid: #0d1722;
     --bg-card: rgba(255, 255, 255, 0.04);
     --bg-card-h: rgba(255, 255, 255, 0.08);
     --txt: #f0f0f8;
-    --txt2: #8888a8;
-    --accent: #3b82f6;
-    --accent2: #8b5cf6;
-    --accent3: #06b6d4;
-    --gold: #f59e0b;
+    --txt2: #90a4bf;
+    --accent: #2f80ed;
+    --accent2: #25a0d9;
+    --accent3: #2cc59f;
+    --gold: #f0b24a;
     --grad: linear-gradient(135deg, var(--accent), var(--accent2));
     --grad2: linear-gradient(135deg, var(--accent2), var(--accent3));
     --border: rgba(255, 255, 255, 0.08);
@@ -691,6 +691,57 @@ section h2 {
 /* ════════════════════════════════════════════════════════
    FEATURES
 ══════════════════════════════════════════════════════════ */
+.roadmap {
+    padding: 92px 0 72px;
+    background: linear-gradient(180deg, rgba(47, 128, 237, 0.05), rgba(44, 197, 159, 0.03));
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.roadmap-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: transform .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.roadmap-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(47, 128, 237, .4);
+    background: var(--bg-card-h);
+}
+
+.roadmap-phase {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #d7ebff;
+    background: linear-gradient(135deg, rgba(47, 128, 237, 0.42), rgba(37, 160, 217, 0.42));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    margin-bottom: 12px;
+}
+
+.roadmap-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.roadmap-card p {
+    color: var(--txt2);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
 .features {
     padding: 90px 0;
 }
@@ -1247,6 +1298,10 @@ section h2 {
     }
 
     .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .roadmap-grid {
         grid-template-columns: 1fr;
     }
 }
