@@ -1,0 +1,25 @@
+[package]
+name = "scrollnice-rs"
+version = "0.1.0"
+edition = "2021"
+description = "ScrollNice Rust/Slint migration baseline"
+
+[lib]
+name = "scrollnice_rs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "scrollnice-rs"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+slint = "1.14"
+tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+
+[build-dependencies]
+slint-build = "1.14"

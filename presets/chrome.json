@@ -1,0 +1,19 @@
+{
+  "id": "chrome",
+  "name": "Chrome",
+  "description": "Optimized for Chrome browser",
+  "config": {
+    "scroll": {
+      "mode": "hover_auto",
+      "scroll_amount": 3,
+      "continuous_speed": 5,
+      "continuous_accel": 1.2,
+      "hover_speed": 3
+    },
+    "zone": {
+      "width": 60,
+      "height": 400,
+      "opacity": 0.3
+    }
+  }
+}

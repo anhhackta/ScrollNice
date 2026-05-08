@@ -1,0 +1,19 @@
+{
+  "id": "vscode",
+  "name": "VS Code",
+  "description": "Optimized for coding and line-by-line navigation",
+  "config": {
+    "scroll": {
+      "mode": "click_hold",
+      "scroll_amount": 2,
+      "continuous_speed": 4,
+      "continuous_accel": 1.1,
+      "hover_speed": 2
+    },
+    "zone": {
+      "width": 56,
+      "height": 360,
+      "opacity": 0.28
+    }
+  }
+}

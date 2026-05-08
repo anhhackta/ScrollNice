@@ -1,0 +1,62 @@
+import { Button } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    in-out property <string> app-title: "ScrollNice";
+    in-out property <string> theme-mode: "dark";
+    in-out property <string> language: "en";
+    in-out property <string> scroll-mode: "HoverAuto";
+    in-out property <string> wheel-block-mode: "Off";
+    in-out property <string> profile-name: "default";
+    callback request-save();
+    callback request-close();
+
+    title: app-title;
+    width: 820px;
+    height: 600px;
+
+    Rectangle {
+        background: theme-mode == "dark" ? #121826 : #f4f7fb;
+        border-radius: 8px;
+
+        VerticalLayout {
+            spacing: 12px;
+            padding: 18px;
+
+            Text {
+                text: app-title + " - Slint Migration";
+                color: theme-mode == "dark" ? #e9eef7 : #11203a;
+                font-size: 28px;
+                font-weight: 700;
+            }
+
+            Rectangle {
+                border-radius: 10px;
+                background: theme-mode == "dark" ? #1d2740 : #e5edf8;
+                border-width: 1px;
+                border-color: theme-mode == "dark" ? #2a385a : #c8d6ed;
+                min-height: 210px;
+
+                VerticalLayout {
+                    padding: 14px;
+                    spacing: 6px;
+
+                    Text { text: "General"; font-size: 20px; font-weight: 600; color: theme-mode == "dark" ? #f7fbff : #0f2440; }
+                    Text { text: "Language: " + language; color: theme-mode == "dark" ? #c6d5ef : #29476d; }
+                    Text { text: "Theme: " + theme-mode; color: theme-mode == "dark" ? #c6d5ef : #29476d; }
+                    Text { text: "Profile: " + profile-name; color: theme-mode == "dark" ? #c6d5ef : #29476d; }
+                    Text { text: "Scroll Mode: " + scroll-mode; color: theme-mode == "dark" ? #c6d5ef : #29476d; }
+                    Text { text: "Wheel Block: " + wheel-block-mode; color: theme-mode == "dark" ? #c6d5ef : #29476d; }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 10px;
+                Button {
+                    text: "Save Config";
+                    clicked => { root.request-save(); }
+                }
+                Button { text: "Close"; clicked => { root.request-close(); } }
+            }
+        }
+    }
+}

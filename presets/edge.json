@@ -1,0 +1,19 @@
+{
+  "id": "edge",
+  "name": "Edge",
+  "description": "Balanced setup for Edge browsing",
+  "config": {
+    "scroll": {
+      "mode": "split_hold",
+      "scroll_amount": 3,
+      "continuous_speed": 5,
+      "continuous_accel": 1.15,
+      "hover_speed": 3
+    },
+    "zone": {
+      "width": 60,
+      "height": 390,
+      "opacity": 0.32
+    }
+  }
+}

@@ -1,32 +1,34 @@
 {
-  "version": 1,
+  "version": 2,
   "enabled": true,
-  "start_with_windows": false,
-  "wheel_block": false,
-  "zone": {
-    "x": 60,
-    "y": 100,
-    "width": 120,
-    "height": 200,
-    "opacity": 0.30,
-    "color": "#3498db",
-    "cover_image": "",
-    "locked": false
-  },
-  "scroll": {
-    "mode": "click_hold",
-    "scroll_amount": 300,
-    "continuous_speed": 8,
-    "continuous_accel": 3,
-    "hover_speed": 6
-  },
-  "sound": {
-    "enabled": true,
-    "click_sound": ""
-  },
+  "language": "en",
+  "theme": "dark",
+  "current_profile": "default",
   "hotkeys": {
     "toggle_enabled": "Ctrl+Alt+S",
     "toggle_edit": "Ctrl+Alt+E",
     "toggle_wheel": "Ctrl+Alt+W"
-  }
+  },
+  "scroll": {
+    "mode": "hover_auto",
+    "scroll_amount": 3,
+    "continuous_speed": 5,
+    "continuous_accel": 1.2,
+    "hover_speed": 3
+  },
+  "zone": {
+    "x": 0,
+    "y": 100,
+    "width": 60,
+    "height": 400,
+    "opacity": 0.3,
+    "locked": false
+  },
+  "wheel_block": "off",
+  "wheel_block_bypass_modifier": "Alt",
+  "start_with_windows": false,
+  "sound": {
+    "enabled": false
+  },
+  "profiles": []
 }
