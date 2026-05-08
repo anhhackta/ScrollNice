@@ -56,7 +56,7 @@ private:
     void DrawModeVisuals(HDC hdc, int w, int h);
     void DrawResizeGrip(HDC hdc, int w, int h);
 
-    // GDI cache — created once in InitGDI(), destroyed in DestroyGDI()
+    // ── Cached GDI objects (no per-frame alloc) ──
     void InitGDI();
     void DestroyGDI();
 
@@ -76,14 +76,16 @@ private:
     HBITMAP coverBmp_ = nullptr;
 
     // ── Cached GDI objects (no per-frame alloc) ──
-    HFONT   fontBold_   = nullptr;  // 14pt Segoe UI Bold
-    HFONT   fontSmall_  = nullptr;  // 10pt Segoe UI
+    HFONT   fontBold_   = nullptr;  // 16pt Segoe UI Bold
+    HFONT   fontSmall_  = nullptr;  // 11pt Segoe UI
     HPEN    borderPen_  = nullptr;  // 2px white
     HPEN    editPen_    = nullptr;  // 3px orange
     HPEN    dashPen_    = nullptr;  // 1px dashed white
+    HPEN    glowPen_    = nullptr;  // 1px blue glow
     HBRUSH  topBrush_   = nullptr;  // Mode 3 top tint (blue)
     HBRUSH  botBrush_   = nullptr;  // Mode 3 bottom tint (red)
     HBRUSH  editBrush_  = nullptr;  // edit mode background tint
+    HBRUSH  hoverBrush_ = nullptr;  // hover state brush
 };
 
 } // namespace sn

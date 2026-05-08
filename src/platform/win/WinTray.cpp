@@ -24,9 +24,10 @@ bool WinTray::Create(HWND parentHwnd, HINSTANCE hInst, MenuCallback cb) {
     if (ok) {
         // Show startup balloon to guide first-time users
         ShowBalloon(
-            L"ScrollNice is running",
-            L"Press Ctrl+Alt+S to show the scroll zone.\n"
-            L"Right-click this icon for options.",
+            L"🖱️ ScrollNice is running",
+            L"Press Ctrl+Alt+S to toggle the scroll zone.\n"
+            L"Double-click this icon for settings.\n"
+            L"Right-click for quick options.",
             NIIF_INFO
         );
     }
@@ -48,7 +49,7 @@ void WinTray::SetModeName(const std::string& mode) {
 }
 
 void WinTray::UpdateTooltip() {
-    std::wstring tip = L"ScrollNice";
+    std::wstring tip = L"🖱️ ScrollNice";
 
     if (!modeName_.empty()) {
         if      (modeName_ == "click_hold") tip += L" - Mode 1: Click/Hold";
@@ -56,7 +57,8 @@ void WinTray::UpdateTooltip() {
         else if (modeName_ == "hover_auto") tip += L" - Mode 3: Hover Auto";
     }
 
-    tip += enabled_ ? L" | ON" : L" | OFF";
+    tip += enabled_ ? L" | ✓ ON" : L" | ✗ OFF";
+    tip += L"\nDouble-click: Settings | Right-click: Menu";
 
     wcsncpy_s(nid_.szTip, tip.c_str(), 127);
     nid_.uFlags = NIF_TIP;
@@ -100,11 +102,13 @@ void WinTray::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 
 void WinTray::ShowContextMenu() {
     HMENU hMenu = CreatePopupMenu();
-    AppendMenuW(hMenu, MF_STRING,    ID_TOGGLE,   enabled_ ? L"&Disable Zone" : L"&Enable Zone");
-    AppendMenuW(hMenu, MF_STRING,    ID_EDIT,     L"&Edit Mode (move/resize)");
-    AppendMenuW(hMenu, MF_STRING,    ID_SETTINGS, L"&Settings...");
+
+    // Add menu items with better styling
+    AppendMenuW(hMenu, MF_STRING,    ID_TOGGLE,   enabled_ ? L"✓ Disable Zone" : L"✗ Enable Zone");
+    AppendMenuW(hMenu, MF_STRING,    ID_EDIT,     L"✏️ Edit Mode (move/resize)");
+    AppendMenuW(hMenu, MF_STRING,    ID_SETTINGS, L"⚙️ Settings...");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenuW(hMenu, MF_STRING,    ID_QUIT,     L"&Quit ScrollNice");
+    AppendMenuW(hMenu, MF_STRING,    ID_QUIT,     L"❌ Quit ScrollNice");
 
     POINT pt;
     GetCursorPos(&pt);

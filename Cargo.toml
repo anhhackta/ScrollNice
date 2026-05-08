@@ -1,0 +1,39 @@
+[package]
+name = "scrollnice-rs"
+version = "0.1.0"
+edition = "2021"
+description = "ScrollNice Rust/Slint migration baseline"
+
+[lib]
+name = "scrollnice_rs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "scrollnice-rs"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+slint = "1.14"
+tokio = { version = "1.48", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+
+[build-dependencies]
+slint-build = "1.14"
+
+# Build thử nhanh hơn release (ít tối ưu hơn, compile nhanh hơn)
+[profile.quick]
+inherits = "release"
+opt-level = 1
+lto = false
+codegen-units = 16
+strip = false
+
+# Bản phát hành gọn, nhanh hơn (Windows: strip khi toolchain hỗ trợ)
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

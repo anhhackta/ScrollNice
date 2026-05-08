@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Changelog — ScrollNice</title>
-    <link rel="icon" type="image/png" href="assets/img/scrollnice.png">
+    <link rel="icon" href="assets/img/scrollnice.png" type="image/png">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="css/style.css">
     <script>
       (function(){
@@ -19,12 +20,15 @@
 <body>
     <nav class="nav" id="main-nav">
     <div class="container">
-        <a href="index.html" class="nav-brand">🖱️ ScrollNice</a>
+        <a href="index.html" class="nav-brand">
+            <img src="assets/img/scrollnice.png" alt="" class="nav-brand-logo" width="28" height="28">
+            <span class="nav-brand-text">ScrollNice</span>
+        </a>
         <div class="nav-links">
             <a href="index.html" data-i18n="nav_home">Trang chủ</a>
             <a href="docs/index.html" data-i18n="nav_docs">Hướng dẫn</a>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <div class="nav-toolbar nav-toolbar--end">
             <button class="theme-btn" title="Toggle theme"></button>
             <div class="lang-dropdown">
                 <button class="lang-trigger" aria-haspopup="true">
@@ -48,6 +52,17 @@
     <div class="container" style="padding-top:100px;padding-bottom:60px;">
         <div class="docs-content">
             <h1>Changelog</h1>
+
+            <h2>v3.0-design — 2026-05-08</h2>
+            <p><strong>Slint UI Migration Design approved</strong> — thống nhất roadmap chuyển từ C++/Win32 sang
+                Rust/Slint với Fluent UI.</p>
+            <ul>
+                <li>✅ Thiết kế kiến trúc 4 lớp: Slint UI, Rust bridge, core logic, platform layer</li>
+                <li>✅ Chốt hệ Theme light/dark và i18n runtime EN/VI</li>
+                <li>✅ Chốt preset/profile schema và luồng lưu cấu hình</li>
+                <li>✅ Chốt wheel-block modes + auto-detect scroll target</li>
+                <li>✅ Cập nhật website/docs để phản ánh lộ trình migration</li>
+            </ul>
 
             <h2>v2.1 — 2025 (Hiện tại / Current)</h2>
             <p><strong>3-Mode Redesign</strong> — Đơn giản hóa từ 5 xuống 3 chế độ, UX/UI được cải thiện đáng kể.</p>

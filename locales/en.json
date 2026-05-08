@@ -1,0 +1,27 @@
+{
+  "app_name": "ScrollNice",
+  "menu": {
+    "toggle_enabled": "Toggle Enabled",
+    "toggle_edit": "Toggle Edit Mode",
+    "settings": "Settings",
+    "quit": "Quit"
+  },
+  "settings": {
+    "general": "General",
+    "zone": "Zone",
+    "scroll": "Scroll",
+    "presets": "Presets",
+    "profiles": "Profiles"
+  },
+  "scroll_modes": {
+    "click_hold": "Click & Hold",
+    "split_hold": "Split Hold",
+    "hover_auto": "Hover Auto"
+  },
+  "wheel_block": {
+    "off": "Off",
+    "global": "Global (when zone active)",
+    "outside_zone": "Outside Zone Only",
+    "inside_zone": "Inside Zone Only"
+  }
+}

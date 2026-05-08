@@ -1,0 +1,19 @@
+{
+  "id": "firefox",
+  "name": "Firefox",
+  "description": "Smooth setup for Firefox long-form reading",
+  "config": {
+    "scroll": {
+      "mode": "hover_auto",
+      "scroll_amount": 3,
+      "continuous_speed": 6,
+      "continuous_accel": 1.25,
+      "hover_speed": 4
+    },
+    "zone": {
+      "width": 62,
+      "height": 420,
+      "opacity": 0.3
+    }
+  }
+}

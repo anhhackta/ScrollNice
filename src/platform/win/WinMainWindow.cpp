@@ -8,17 +8,22 @@ namespace sn {
 
 static WinMainWindow* g_mainWnd = nullptr;
 
-// ─── Modern dark theme colors ───
-static const COLORREF CLR_BG         = RGB(24, 24, 32);      // Deep dark background
-static const COLORREF CLR_SURFACE    = RGB(32, 32, 44);      // Slightly lighter surface
-static const COLORREF CLR_CARD       = RGB(40, 40, 52);      // Card background
-static const COLORREF CLR_TEXT       = RGB(240, 240, 250);    // Near-white text
-static const COLORREF CLR_TEXT_DIM   = RGB(160, 160, 180);   // Dimmed text
-static const COLORREF CLR_ACCENT     = RGB(99, 130, 246);    // Blue accent
-static const COLORREF CLR_ACCENT_H   = RGB(120, 150, 255);   // Lighter blue
-static const COLORREF CLR_SUCCESS    = RGB(80, 200, 120);    // Green
-static const COLORREF CLR_BORDER     = RGB(60, 60, 80);      // Border color
-static const COLORREF CLR_HOVER      = RGB(50, 50, 70);      // Hover state
+// ─── Modern dark theme colors (v2 - Enhanced) ───
+static const COLORREF CLR_BG         = RGB(12, 12, 20);      // Deep dark background
+static const COLORREF CLR_SURFACE    = RGB(20, 20, 32);      // Slightly lighter surface
+static const COLORREF CLR_CARD       = RGB(28, 28, 40);      // Card background
+static const COLORREF CLR_CARD_H     = RGB(36, 36, 48);      // Card hover
+static const COLORREF CLR_TEXT       = RGB(245, 245, 255);   // Near-white text
+static const COLORREF CLR_TEXT_DIM   = RGB(140, 140, 160);   // Dimmed text
+static const COLORREF CLR_ACCENT     = RGB(59, 130, 246);    // Blue accent
+static const COLORREF CLR_ACCENT_H   = RGB(99, 150, 255);    // Lighter blue hover
+static const COLORREF CLR_ACCENT2    = RGB(139, 92, 246);    // Purple accent
+static const COLORREF CLR_SUCCESS    = RGB(34, 197, 94);     // Green
+static const COLORREF CLR_BORDER     = RGB(50, 50, 70);      // Border color
+static const COLORREF CLR_BORDER_H   = RGB(70, 70, 90);      // Border hover
+static const COLORREF CLR_HOVER      = RGB(40, 40, 56);      // Hover state
+static const COLORREF CLR_INPUT      = RGB(16, 16, 28);      // Input background
+static const COLORREF CLR_INPUT_F    = RGB(24, 24, 36);      // Input focused
 
 // ─── Control IDs ───
 enum {
@@ -93,11 +98,11 @@ bool WinMainWindow::Create(HINSTANCE hInst, AppConfig& cfg,
     wc.hIcon          = LoadIcon(nullptr, IDI_APPLICATION);
     RegisterClassExW(&wc);
 
-    const int W = 520, H = 680;
+    const int W = 560, H = 720;
     int sx = (GetSystemMetrics(SM_CXSCREEN) - W) / 2;
     int sy = (GetSystemMetrics(SM_CYSCREEN) - H) / 2;
 
-    hwnd_ = CreateWindowExW(0, kMainClass, L"ScrollNice - Settings",
+    hwnd_ = CreateWindowExW(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, kMainClass, L"ScrollNice - Settings",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         sx, sy, W, H, nullptr, nullptr, hInst, nullptr);
     if (!hwnd_) return false;
@@ -129,101 +134,101 @@ void WinMainWindow::InitControls() {
         return Mk(hwnd_, cls, text, style, x, y, w, h, id, hInst_);
     };
 
-    int y = 12;
-    const int LX = 16;       // left margin
-    const int PW = 488;      // panel width
-    const int LBL_W = 100;   // label width
-    const int EDIT_W = 70;   // edit field width
+    int y = 16;
+    const int LX = 20;       // left margin
+    const int PW = 520;      // panel width
+    const int LBL_W = 110;   // label width
+    const int EDIT_W = 75;   // edit field width
 
     // ═══ Zone GroupBox ═══
-    HWND g1 = mk(L"BUTTON", L"  🖱️ Zone", BS_GROUPBOX, LX, y, PW, 180, 0);
+    HWND g1 = mk(L"BUTTON", L"  🖱️ Zone Settings", BS_GROUPBOX, LX, y, PW, 190, 0);
     SendMessage(g1, WM_SETFONT, (WPARAM)hFontBold_, TRUE);
-    y += 26;
-
-    mk(L"BUTTON", L"Enable Zone", BS_AUTOCHECKBOX, LX+16, y, 140, 22, IDC_ZONE_ENABLE);
-    mk(L"STATIC", L"Mode:", 0, LX+200, y, 50, 20, 0);
-    HWND combo = mk(L"COMBOBOX", L"", CBS_DROPDOWNLIST | WS_VSCROLL,
-                     LX+255, y-2, 180, 120, IDC_MODE_COMBO);
-    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Mode 1: Click/Hold");
-    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Mode 2: Top/Bottom");
-    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Mode 3: Hover Auto");
-    y += 30;
-
-    mk(L"STATIC", L"Position X:", 0, LX+16, y, LBL_W, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+120, y-2, EDIT_W, 24, IDC_ZONE_X);
-    mk(L"STATIC", L"Y:", 0, LX+200, y, 20, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+225, y-2, EDIT_W, 24, IDC_ZONE_Y);
     y += 28;
 
-    mk(L"STATIC", L"Size W:", 0, LX+16, y, LBL_W, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+120, y-2, EDIT_W, 24, IDC_ZONE_W);
-    mk(L"STATIC", L"H:", 0, LX+200, y, 20, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+225, y-2, EDIT_W, 24, IDC_ZONE_H);
+    mk(L"BUTTON", L"Enable Zone", BS_AUTOCHECKBOX, LX+20, y, 150, 24, IDC_ZONE_ENABLE);
+    mk(L"STATIC", L"Scroll Mode:", 0, LX+200, y, 90, 22, 0);
+    HWND combo = mk(L"COMBOBOX", L"", CBS_DROPDOWNLIST | WS_VSCROLL,
+                     LX+295, y-2, 200, 120, IDC_MODE_COMBO);
+    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Mode 1: Click/Hold");
+    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Mode 2: Top/Bottom Split");
+    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Mode 3: Hover Auto");
+    y += 32;
+
+    mk(L"STATIC", L"Position X:", 0, LX+20, y, LBL_W, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+130, y-2, EDIT_W, 26, IDC_ZONE_X);
+    mk(L"STATIC", L"Y:", 0, LX+220, y, 20, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+245, y-2, EDIT_W, 26, IDC_ZONE_Y);
     y += 30;
 
-    mk(L"STATIC", L"Opacity:", 0, LX+16, y, 70, 20, 0);
+    mk(L"STATIC", L"Size Width:", 0, LX+20, y, LBL_W, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+130, y-2, EDIT_W, 26, IDC_ZONE_W);
+    mk(L"STATIC", L"Height:", 0, LX+220, y, 50, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+275, y-2, EDIT_W, 26, IDC_ZONE_H);
+    y += 32;
+
+    mk(L"STATIC", L"Opacity:", 0, LX+20, y, 70, 22, 0);
     HWND slider = mk(TRACKBAR_CLASSW, L"", TBS_HORZ | TBS_AUTOTICKS,
-                     LX+90, y-3, 260, 28, IDC_ZONE_OPACITY);
+                     LX+95, y-3, 280, 30, IDC_ZONE_OPACITY);
     SendMessage(slider, TBM_SETRANGE, TRUE, MAKELPARAM(5, 100));
     SendMessage(slider, TBM_SETTICFREQ, 10, 0);
-    mk(L"STATIC", L"25%", SS_CENTER, LX+360, y, 50, 22, IDC_ZONE_OPACITY_LBL);
-    y += 30;
+    mk(L"STATIC", L"25%", SS_CENTER, LX+390, y, 50, 24, IDC_ZONE_OPACITY_LBL);
+    y += 32;
 
-    mk(L"BUTTON", L"Lock Position", BS_AUTOCHECKBOX, LX+16, y, 150, 22, IDC_ZONE_LOCKED);
-    y += 28 + 8;
-
-    // ═══ Scroll GroupBox ═══
-    HWND g2 = mk(L"BUTTON", L"  ⚙️ Scroll", BS_GROUPBOX, LX, y, PW, 120, 0);
-    SendMessage(g2, WM_SETFONT, (WPARAM)hFontBold_, TRUE);
-    y += 26;
-
-    mk(L"STATIC", L"Amount:", 0, LX+16, y, 60, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+80, y-2, EDIT_W, 24, IDC_SCROLL_AMOUNT);
-    mk(L"STATIC", L"px/click", 0, LX+160, y, 60, 20, 0);
-    y += 28;
-
-    mk(L"STATIC", L"Hold spd:", 0, LX+16, y, 70, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+90, y-2, 50, 24, IDC_HOLD_SPEED);
-    mk(L"STATIC", L"Accel:", 0, LX+155, y, 45, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+205, y-2, 50, 24, IDC_HOLD_ACCEL);
-    mk(L"STATIC", L"Hover:", 0, LX+270, y, 50, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+325, y-2, 50, 24, IDC_HOVER_SPEED);
-    y += 28 + 8;
-
-    // ═══ General GroupBox ═══
-    HWND g3 = mk(L"BUTTON", L"  🎛️ General", BS_GROUPBOX, LX, y, PW, 100, 0);
-    SendMessage(g3, WM_SETFONT, (WPARAM)hFontBold_, TRUE);
-    y += 26;
-
-    mk(L"BUTTON", L"Block Mouse Wheel (Ctrl+Alt+W)", BS_AUTOCHECKBOX, LX+16, y, 300, 22, IDC_WHEEL_BLOCK);
-    y += 24;
-    mk(L"BUTTON", L"Start with Windows", BS_AUTOCHECKBOX, LX+16, y, 200, 22, IDC_START_WINDOWS);
-    y += 24;
-    mk(L"BUTTON", L"Click Sound", BS_AUTOCHECKBOX, LX+16, y, 150, 22, IDC_SOUND_ENABLED);
-    y += 28 + 8;
-
-    // ═══ Hotkeys GroupBox ═══
-    HWND g4 = mk(L"BUTTON", L"  ⌨️ Hotkeys", BS_GROUPBOX, LX, y, PW, 90, 0);
-    SendMessage(g4, WM_SETFONT, (WPARAM)hFontBold_, TRUE);
-    y += 26;
-
-    mk(L"STATIC", L"Toggle:", 0, LX+16, y, 60, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER, LX+80, y-2, 110, 24, IDC_HK_TOGGLE);
-    mk(L"STATIC", L"Edit:", 0, LX+210, y, 40, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER, LX+255, y-2, 110, 24, IDC_HK_EDIT);
-    y += 28;
-    mk(L"STATIC", L"Wheel:", 0, LX+16, y, 60, 20, 0);
-    mk(L"EDIT", L"", WS_BORDER, LX+80, y-2, 110, 24, IDC_HK_WHEEL);
+    mk(L"BUTTON", L"Lock Position", BS_AUTOCHECKBOX, LX+20, y, 160, 24, IDC_ZONE_LOCKED);
     y += 32 + 8;
 
+    // ═══ Scroll GroupBox ═══
+    HWND g2 = mk(L"BUTTON", L"  ⚙️ Scroll Settings", BS_GROUPBOX, LX, y, PW, 130, 0);
+    SendMessage(g2, WM_SETFONT, (WPARAM)hFontBold_, TRUE);
+    y += 28;
+
+    mk(L"STATIC", L"Scroll Amount:", 0, LX+20, y, 100, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+125, y-2, EDIT_W, 26, IDC_SCROLL_AMOUNT);
+    mk(L"STATIC", L"px/click", 0, LX+210, y, 70, 22, 0);
+    y += 30;
+
+    mk(L"STATIC", L"Hold Speed:", 0, LX+20, y, 90, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+115, y-2, 55, 26, IDC_HOLD_SPEED);
+    mk(L"STATIC", L"Accel:", 0, LX+185, y, 50, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+240, y-2, 55, 26, IDC_HOLD_ACCEL);
+    mk(L"STATIC", L"Hover:", 0, LX+310, y, 50, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER | ES_NUMBER, LX+365, y-2, 55, 26, IDC_HOVER_SPEED);
+    y += 32 + 8;
+
+    // ═══ General GroupBox ═══
+    HWND g3 = mk(L"BUTTON", L"  🎛️ General Settings", BS_GROUPBOX, LX, y, PW, 110, 0);
+    SendMessage(g3, WM_SETFONT, (WPARAM)hFontBold_, TRUE);
+    y += 28;
+
+    mk(L"BUTTON", L"Block Mouse Wheel (Ctrl+Alt+W)", BS_AUTOCHECKBOX, LX+20, y, 320, 24, IDC_WHEEL_BLOCK);
+    y += 26;
+    mk(L"BUTTON", L"Start with Windows", BS_AUTOCHECKBOX, LX+20, y, 200, 24, IDC_START_WINDOWS);
+    y += 26;
+    mk(L"BUTTON", L"Click Sound", BS_AUTOCHECKBOX, LX+20, y, 150, 24, IDC_SOUND_ENABLED);
+    y += 32 + 8;
+
+    // ═══ Hotkeys GroupBox ═══
+    HWND g4 = mk(L"BUTTON", L"  ⌨️ Hotkey Settings", BS_GROUPBOX, LX, y, PW, 100, 0);
+    SendMessage(g4, WM_SETFONT, (WPARAM)hFontBold_, TRUE);
+    y += 28;
+
+    mk(L"STATIC", L"Toggle Zone:", 0, LX+20, y, 90, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER, LX+115, y-2, 120, 26, IDC_HK_TOGGLE);
+    mk(L"STATIC", L"Edit Mode:", 0, LX+255, y, 80, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER, LX+340, y-2, 120, 26, IDC_HK_EDIT);
+    y += 30;
+    mk(L"STATIC", L"Block Wheel:", 0, LX+20, y, 90, 22, 0);
+    mk(L"EDIT", L"", WS_BORDER, LX+115, y-2, 120, 26, IDC_HK_WHEEL);
+    y += 36 + 8;
+
     // ═══ Buttons ═══
-    mk(L"BUTTON", L"💾 Save", BS_DEFPUSHBUTTON, LX+120, y, 120, 38, IDC_SAVE_BTN);
-    mk(L"BUTTON", L"🔄 Reset", 0, LX+260, y, 120, 38, IDC_RESET_BTN);
-    y += 48;
+    mk(L"BUTTON", L"💾 Save Settings", BS_DEFPUSHBUTTON, LX+140, y, 130, 42, IDC_SAVE_BTN);
+    mk(L"BUTTON", L"🔄 Reset to Default", 0, LX+290, y, 130, 42, IDC_RESET_BTN);
+    y += 52;
 
     // ═══ Status Bar ═══
     mk(L"STATIC", L"Zone: OFF | Mode 1 | Ready",
-       SS_CENTER | SS_SUNKEN, 0, y, 520, 24, IDC_STATUS_BAR);
+       SS_CENTER | SS_SUNKEN, 0, y, 560, 26, IDC_STATUS_BAR);
 
     // Apply font to all children
     EnumChildWindows(hwnd_, [](HWND child, LPARAM lp) -> BOOL {
@@ -344,8 +349,58 @@ LRESULT CALLBACK WinMainWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
     case WM_CTLCOLORLISTBOX: {
         HDC hdc = (HDC)wParam;
         SetTextColor(hdc, CLR_TEXT);
-        SetBkColor(hdc, CLR_SURFACE);
+        SetBkColor(hdc, CLR_INPUT);
         if (self) return (LRESULT)self->hBrushSurface_;
+        break;
+    }
+
+    // ── Custom draw for buttons (modern styling) ──
+    case WM_DRAWITEM: {
+        if (!self) break;
+        LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT)lParam;
+        if (dis->CtlType == ODT_BUTTON) {
+            HDC hdc = dis->hDC;
+            RECT rc = dis->rcItem;
+
+            // Background
+            HBRUSH bgBrush;
+            COLORREF textColor = CLR_TEXT;
+            COLORREF borderColor = CLR_BORDER;
+
+            if (dis->itemState & ODS_SELECTED) {
+                bgBrush = CreateSolidBrush(CLR_ACCENT);
+                textColor = RGB(255, 255, 255);
+                borderColor = CLR_ACCENT_H;
+            } else if (dis->itemState & ODS_HOT) {
+                bgBrush = CreateSolidBrush(CLR_CARD_H);
+                borderColor = CLR_BORDER_H;
+            } else {
+                bgBrush = CreateSolidBrush(CLR_CARD);
+            }
+
+            FillRect(hdc, &rc, bgBrush);
+
+            // Border
+            HPEN pen = CreatePen(PS_SOLID, 1, borderColor);
+            HPEN oldPen = (HPEN)SelectObject(hdc, pen);
+            HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, (HBRUSH)GetStockObject(NULL_BRUSH));
+            Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
+            SelectObject(hdc, oldPen);
+            SelectObject(hdc, oldBrush);
+            DeleteObject(pen);
+            DeleteObject(bgBrush);
+
+            // Text
+            wchar_t text[256];
+            GetWindowTextW(dis->hwndItem, text, 256);
+            SetBkMode(hdc, TRANSPARENT);
+            SetTextColor(hdc, textColor);
+            HFONT oldFont = (HFONT)SelectObject(hdc, hFont_);
+            DrawTextW(hdc, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            SelectObject(hdc, oldFont);
+
+            return TRUE;
+        }
         break;
     }
 
@@ -364,13 +419,16 @@ LRESULT CALLBACK WinMainWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
     case WM_TIMER:
         if (self && wParam == IDC_TIMER_STATUS) {
             bool zoneOn = self->cfg_ && self->cfg_->enabled;
-            std::wstring status = zoneOn ? L"Zone: ON" : L"Zone: OFF";
+            std::wstring status = zoneOn ? L"✓ Zone: ON" : L"✗ Zone: OFF";
 
             int modeIdx = (int)SendDlgItemMessage(hwnd, IDC_MODE_COMBO, CB_GETCURSEL, 0, 0);
-            status += L" | Mode ";
-            status += std::to_wstring(modeIdx + 1);
+            const wchar_t* modeNames[] = {L"Click/Hold", L"Top/Bottom", L"Hover Auto"};
+            if (modeIdx >= 0 && modeIdx < 3) {
+                status += L" | Mode: ";
+                status += modeNames[modeIdx];
+            }
 
-            status += L" | ScrollNice v1.0";
+            status += L" | ScrollNice v2.1";
             self->SetStatusText(status);
         }
         return 0;

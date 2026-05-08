@@ -1,0 +1,27 @@
+{
+  "app_name": "ScrollNice",
+  "menu": {
+    "toggle_enabled": "Bật/Tắt",
+    "toggle_edit": "Chế độ chỉnh sửa",
+    "settings": "Cài đặt",
+    "quit": "Thoát"
+  },
+  "settings": {
+    "general": "Tổng quan",
+    "zone": "Vùng cuộn",
+    "scroll": "Cuộn",
+    "presets": "Mẫu cài đặt",
+    "profiles": "Hồ sơ"
+  },
+  "scroll_modes": {
+    "click_hold": "Click & Giữ",
+    "split_hold": "Chia & Giữ",
+    "hover_auto": "Hover Tự động"
+  },
+  "wheel_block": {
+    "off": "Tắt",
+    "global": "Toàn bộ (khi zone hoạt động)",
+    "outside_zone": "Chỉ ngoài zone",
+    "inside_zone": "Chỉ trong zone"
+  }
+}
