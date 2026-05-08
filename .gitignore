@@ -1,4 +1,15 @@
-/build/Release
-/build/Release
+# CMake / MSVC (không commit artifact build)
+/build/
+out/
+
+# Rust
+/target/
+
+# Công cụ / IDE cục bộ
 /.omx
-/target
+.vs/
+*.user
+
+# Hệ điều hành
+.DS_Store
+Thumbs.db

@@ -7,7 +7,8 @@
     <title>Tổng quan / Overview — ScrollNice Docs</title>
     <meta name="description"
         content="Tài liệu hướng dẫn ScrollNice — ứng dụng lăn chuột bằng click. ScrollNice documentation overview.">
-    <link rel="icon" type="image/png" href="../assets/img/scrollnice.png">
+    <link rel="icon" href="../assets/img/scrollnice.png" type="image/png">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="../css/style.css">
     <script>
       (function(){
@@ -21,12 +22,15 @@
 <body>
     <nav class="nav" id="main-nav">
     <div class="container">
-        <a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+        <a href="../index.html" class="nav-brand">
+            <img src="../assets/img/scrollnice.png" alt="" class="nav-brand-logo" width="28" height="28">
+            <span class="nav-brand-text">ScrollNice</span>
+        </a>
         <div class="nav-links">
             <a href="../index.html" data-i18n="nav_home">Trang chủ</a>
             <a href="index.html" style="color:var(--accent)" data-i18n="nav_docs">Hướng dẫn</a>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <div class="nav-toolbar nav-toolbar--end">
             <button class="theme-btn" title="Toggle theme"></button>
             <div class="lang-dropdown">
                 <button class="lang-trigger" aria-haspopup="true">
@@ -138,8 +142,8 @@
                     </tr>
                 </table>
 
-                <p>Xem đầy đủ design spec tại:
-                    <a href="../superpowers/specs/2026-05-08-slint-ui-migration-design.md">2026-05-08-slint-ui-migration-design.md</a>
+                <p>Xem đầy đủ design spec trên GitHub:
+                    <a href="https://github.com/anhhackta/ScrollNice/blob/main/docs/superpowers/specs/2026-05-08-slint-ui-migration-design.md" target="_blank" rel="noopener">2026-05-08-slint-ui-migration-design.md</a>
                 </p>
 
                 <h2>Liên kết nhanh</h2>

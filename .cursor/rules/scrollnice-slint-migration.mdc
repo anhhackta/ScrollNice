@@ -1,0 +1,40 @@
+---
+description: ScrollNice — Rust/Slint migration, spec nguồn, song song C++ release
+alwaysApply: true
+---
+
+# ScrollNice — Quy ước dự án (Migration Rust/Slint)
+
+## Tài liệu chuẩn (đọc trước khi đổi kiến trúc)
+
+- Tiến độ migration: `MIGRATION_STATUS_2026-05-08.md` (đã xong / còn pending).
+- Thiết kế đã duyệt: `docs/superpowers/specs/2026-05-08-slint-ui-migration-design.md` (kiến trúc, schema config v2, i18n, preset/profile, Win32 bridge).
+
+## Hai nhánh build (cố ý)
+
+- **C++ / CMake** (`CMakeLists.txt`, `src/main.cpp`, `src/platform/win/*`): vẫn là đường release hiện tại; không xoá hoặc phá vỡ build C++ cho đến khi Rust đạt parity (xem migration status).
+- **Rust / Slint** (`Cargo.toml`, `src/**/*.rs`, `ui/*.slint`): lane migration; binary `scrollnice-rs`. Giữ logic cốt lõi trong `src/core/`, tách Win32 trong `src/platform/win32/`.
+
+## Config & tài nguyên
+
+- `config.json` theo **schema version 2** trong design doc; đồng bộ với `ConfigStore` / serde.
+- `locales/*.json`, `presets/*.json` là nguồn sự thật cho i18n và preset; thêm khóa mới thì cập nhật cả `en` và `vi` khi có thể.
+
+## Việc còn lại (ưu tiên theo spec)
+
+- Win32 bridge: mouse hook, inject input, tray, hotkeys; overlay click-through / layered.
+- UI Slint: đủ tab Settings, preset/profile persistence, parity với C++.
+- Kiểm thử: unit (core) + so sánh E2E với bản C++.
+
+## Ràng buộc khi sửa code
+
+- Thay đổi tối thiểu, khớp phong cách module hiện có; không refactor rộng không liên quan task.
+- Sau thay đổi build: `cargo test`, `cargo build --release`; bản thử nhanh: `cargo build --profile quick`. C++: CMake như README.
+- Trang GitHub Pages trong `docs/`: favicon PNG `assets/img/scrollnice.png` + `favicon.svg`; ảnh brand/marquee trong `docs/assets/img/`.
+
+## Ví dụ
+
+```text
+# ❌ BAD: Đổi schema JSON hoặc tên field config không cập nhật ConfigStore + tài liệu spec.
+# ✅ GOOD: Cập nhật struct serde, `config.json` mẫu, và một đoạn ngắn trong MIGRATION_STATUS nếu ảnh hưởng tiến độ.
+```

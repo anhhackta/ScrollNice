@@ -2,197 +2,211 @@
 
 # 🖱️ ScrollNice
 
-> **Scroll by Clicking — no physical mouse wheel needed**
+> **Scroll by clicking — no physical mouse wheel required**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078d4?logo=windows)](https://github.com/anhhackta/ScrollNice/releases)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?logo=googlechrome&logoColor=white)](https://github.com/anhhackta/ScrollNice)
-[![Size: <500KB](https://img.shields.io/badge/Size-%3C500KB-green)](https://github.com/anhhackta/ScrollNice/releases)
-[![Free & Open Source](https://img.shields.io/badge/Free-%26%20Open%20Source-orange)](https://github.com/anhhackta/ScrollNice)
+[![Rust](https://img.shields.io/badge/stack-Rust%20%2B%20Slint%20(migration)-DEA584?logo=rust)](https://github.com/anhhackta/ScrollNice)
+[![Pages](https://img.shields.io/badge/docs-GitHub%20Pages-222?logo=github)](https://anhhackta.github.io/ScrollNice/)
 
 <p align="center">
-<a href="https://github.com/anhhackta/ScrollNice/blob/main/README_vn.md">
-    <img src="https://hatscripts.github.io/circle-flags/flags/vn.svg" width="20">
-</a>
-  <!-- Keep these links. Translations will automatically update with the README. -->
- <a href="https://github.com/anhhackta/ScrollNice">
-    <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" width="35">
-</a>
+  <a href="https://github.com/anhhackta/ScrollNice/blob/main/README_vn.md" title="Tiếng Việt">
+    <img src="https://hatscripts.github.io/circle-flags/flags/vn.svg" width="22" alt="VN">
+  </a>
+  <a href="https://github.com/anhhackta/ScrollNice/blob/main/README.md" title="English">
+    <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" width="22" alt="EN">
+  </a>
 </p>
 
-**ScrollNice** is a Windows utility and Chrome Extension that allows you to scroll by **clicking, holding, or just hovering** over a floating zone (Scroll Zone). Perfect for broken scroll wheels, one-handed workflows, or an alternative scrolling experience.
+**ScrollNice** is a **Windows** system utility and a **Chrome extension** (FeelClick). Use a floating **scroll zone**: **click**, **hold**, or **hover** to scroll — ideal for broken wheels, one-handed use, or a different scrolling feel.
 
-🌐 **Website:** [anhhackta.github.io/ScrollNice](https://anhhackta.github.io/ScrollNice/)
+🌐 **Site:** [anhhackta.github.io/ScrollNice](https://anhhackta.github.io/ScrollNice/) · **Sources:** `docs/` (GitHub Pages)
 
 </div>
 
 ---
 
-## ✨ Key Features
+## Highlights
 
-| Feature | Description |
-|---------|-------------|
-| 🖱️ **3 Scroll Modes** | Click/Hold · Top/Bottom Split · Auto-Scroll on Hover |
-| 🪶 **Ultra Lightweight** | < 500KB, CPU ≈ 0% at idle, RAM < 10MB |
-| 🔒 **No Telemetry** | No data collected, no ads, completely offline |
-| ⌨️ **Hotkeys** | Ctrl+Alt+S to toggle, Ctrl+Alt+E for edit mode. Fully customizable |
-| 🎨 **Customizable** | Resize/move zones, adjust opacity, sensitivity, edit click sounds |
-| 🚫 **Wheel Block** | Toggle blocking of physical wheel scroll events (hold `Alt` to bypass) |
-| 🌐 **Chrome Extension** | Lightweight browser version, load as unpacked |
-| 🔄 **Portable** | No installation required, just extract the zip and run the `.exe` |
+| | |
+|--|--|
+| **Three modes** | Click/hold · top/bottom split · hover auto-scroll |
+| **Small native build** | Classic release is a tiny portable **`.exe`** (see [Releases](https://github.com/anhhackta/ScrollNice/releases)) |
+| **No telemetry** | Offline-first; no ads |
+| **Hotkeys** | Defaults: `Ctrl+Alt+S` (toggle), `Ctrl+Alt+E` (edit zone), `Ctrl+Alt+W` (wheel block) — configurable in `config.json` |
+| **Wheel block** | Optional; hold **`Alt`** to bypass (when configured) |
+| **Chrome** | Load unpacked from `extension/FeelClick/` |
 
 ---
 
-## 🎮 3 Scroll Modes
+## Install
 
-### Mode 1 — Click / Hold
-- **Left click** → scroll up ↑
-- **Right click** → scroll down ↓
-- **Hold mouse button** → continuous scroll with acceleration
+### Windows (portable, from Releases)
 
-### Mode 2 — Top / Bottom Split
-- The zone is split into two halves (top / bottom)
-- **Click/Hold top half** → scroll up ↑
-- **Click/Hold bottom half** → scroll down ↓
+1. Download **`ScrollNice-portable.zip`** from [Releases](https://github.com/anhhackta/ScrollNice/releases).
+2. Extract and run **`ScrollNice.exe`**.
+3. Settings: **`config.json`** next to the executable.
 
-### Mode 3 — Auto-Scroll on Hover *(Special)*
-- **No click required!**
-- Hover top half → auto scroll up ↑
-- Hover bottom half → auto scroll down ↓
+> The shipped binary today is built from the **C++ / Win32** stack. A **Rust + Slint** UI rewrite is in progress (see [Migration status](MIGRATION_STATUS_2026-05-08.md)).
+
+### Chrome extension (FeelClick)
+
+1. Clone or download this repo.
+2. Chrome → `chrome://extensions/` → enable **Developer mode** → **Load unpacked**.
+3. Choose **`extension/FeelClick/`**.
 
 ---
 
-## 📥 Installation
+## Build from source
 
-### Windows App (Portable)
-1. Download [`ScrollNice-portable.zip`](https://github.com/anhhackta/ScrollNice/releases) from Releases.
-2. Extract the file and run `ScrollNice.exe`.
-3. The scroll zone will appear — simply move your cursor into it to start scrolling.
+### C++ application (current release path)
 
-> Settings are loaded from `./config.json` next to the executable.
+**Requirements:** CMake ≥ 3.15, MSVC 2019+ (or compatible toolchain).
 
-### Chrome Extension (FeelClick)
-1. Download the source code or clone the repository.
-2. Open Chrome and navigate to `chrome://extensions/`.
-3. Enable **Developer mode** and click **Load unpacked**.
-4. Select the `extension/FeelClick/` directory.
-
-### Build from source (C++17 / CMake)
-```bash
+```powershell
 git clone https://github.com/anhhackta/ScrollNice.git
 cd ScrollNice
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
-Requirements: MSVC 2019+ or MinGW, CMake ≥ 3.20
+
+Output: `build/Release/ScrollNice.exe` (layout may vary slightly by generator).
+
+### Rust + Slint (migration / preview)
+
+**Requirements:** [Rust stable](https://rustup.rs/), same repo root.
+
+```powershell
+# Debug (nhanh nhất để compile lặp, binary lớn hơn)
+cargo build
+# .\target\debug\scrollnice-rs.exe
+
+# Thử tối ưu vừa phải — compile nhanh hơn --release
+cargo build --profile quick
+# .\target\quick\scrollnice-rs.exe
+
+# Bản phát hành tối ưu
+cargo test
+cargo build --release
+# .\target\release\scrollnice-rs.exe
+```
+
+Design and schema: **`docs/superpowers/specs/2026-05-08-slint-ui-migration-design.md`** · Progress: **`MIGRATION_STATUS_2026-05-08.md`**.
+
+### Which `.exe` should I run?
+
+| Goal | Run this |
+|------|----------|
+| **Normal use** | Download from [Releases](https://github.com/anhhackta/ScrollNice/releases) → `ScrollNice.exe` inside the zip (C++ build). |
+| **After CMake** (`cmake --build …`) | `build\Release\ScrollNice.exe` (path may vary, e.g. `build\x64\Release\`). |
+| **After `cargo build`** | `target\debug\scrollnice-rs.exe` |
+| **After `cargo build --profile quick`** | `target\quick\scrollnice-rs.exe` |
+| **After `cargo build --release`** | `target\release\scrollnice-rs.exe` |
+
+Only one of these is needed at a time. **`target\`** holds Rust outputs; **`build\`** holds CMake outputs — both are safe to delete and will be recreated on the next build (they are gitignored).
 
 ---
 
-## ⌨️ Default Hotkeys
+## Configuration (`config.json`)
 
-| Hotkey | Action |
-|--------|--------|
-| `Ctrl+Alt+S` | Enable / Disable ScrollNice (Panic Key) |
-| `Ctrl+Alt+E` | Toggle Edit Mode (Drag/Resize Zones) |
-| `Ctrl+Alt+W` | Toggle physical wheel blocking |
-
-> You can fully customize these hotkeys in `config.json`.
-
----
-
-## ⚙️ Configuration (`config.json`)
+The **Rust** baseline uses **schema version 2** (see spec). Example:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "enabled": true,
-  "start_with_windows": false,
-  "wheel_block": false,
-  "zone": {
-    "x": 60,
-    "y": 100,
-    "width": 120,
-    "height": 200,
-    "opacity": 0.30,
-    "color": "#3498db",
-    "cover_image": "",
-    "locked": false
+  "language": "en",
+  "theme": "dark",
+  "current_profile": "default",
+  "hotkeys": {
+    "toggle_enabled": "Ctrl+Alt+S",
+    "toggle_edit": "Ctrl+Alt+E",
+    "toggle_wheel": "Ctrl+Alt+W"
   },
   "scroll": {
-    "mode": "click_hold",
-    "scroll_amount": 300,
-    "continuous_speed": 8,
-    "continuous_accel": 3,
-    "hover_speed": 6
+    "mode": "hover_auto",
+    "scroll_amount": 3,
+    "continuous_speed": 5,
+    "continuous_accel": 1.2,
+    "hover_speed": 3
   },
-  "sound": {
-    "enabled": true,
-    "click_sound": ""
+  "zone": {
+    "x": 0,
+    "y": 100,
+    "width": 60,
+    "height": 400,
+    "opacity": 0.3,
+    "locked": false
   },
-  "hotkeys": {
-    "toggle_enabled":  "Ctrl+Alt+S",
-    "toggle_edit":     "Ctrl+Alt+E",
-    "toggle_wheel":    "Ctrl+Alt+W"
-  }
+  "wheel_block": "off",
+  "wheel_block_bypass_modifier": "Alt",
+  "start_with_windows": false,
+  "sound": { "enabled": false },
+  "profiles": []
 }
 ```
 
+The legacy **C++** build may still expect an older shape for some fields; if you mix binaries, keep a backup of `config.json`. Full reference: [docs](https://anhhackta.github.io/ScrollNice/docs/settings.html).
+
 ---
 
-## 📁 Project Structure
+## Repository layout
 
 ```
 ScrollNice/
+├── Cargo.toml, build.rs          # Rust + Slint (migration)
+├── CMakeLists.txt                # Native Windows app (C++17)
+├── config.json                   # Default / sample config (v2 for Rust)
+├── ui/                           # Slint UI (.slint)
 ├── src/
-│   ├── core/           # ZoneManager, ScrollEngine, StateMachine, Config
-│   ├── platform/win/   # WinMouseHook, WinOverlay, WinInputInjector, WinTray
-│   └── ui/             # Zone rendering logic
-├── extension/
-│   └── FeelClick/      # Chrome Extension version (MV3)
-├── docs/               # Website source code (GitHub Pages)
-│   ├── css/style.css
-│   ├── js/             # main.js, i18n.js, docs-i18n.js
-│   ├── docs/           # Documentation pages
-│   └── assets/
-├── tests/              # Unit tests (ScrollEngine, HitTest algorithms)
-├── CMakeLists.txt
-└── config.json         # Default app configuration
+│   ├── main.rs, lib.rs
+│   ├── core/                     # Rust: config, zone, scroll_engine, state_machine (+ C++ counterparts)
+│   ├── platform/win/             # C++ Win32 implementation
+│   ├── platform/win32/           # Rust Win32 stubs / bridge (in progress)
+│   ├── i18n/, themes/, ui/
+│   └── main.cpp                  # C++ entry
+├── extension/FeelClick/          # Chrome MV3 extension
+├── locales/, presets/            # Rust i18n + presets
+├── docs/                         # GitHub Pages (landing + guides)
+│   ├── index.html, changelog.html, favicon.svg
+│   ├── css/, js/
+│   └── docs/                     # Documentation pages
+├── docs/superpowers/specs/       # Approved design specs
+├── MIGRATION_STATUS_2026-05-08.md
+├── ScrollNiceDoc                 # Optional narrative history (Vietnamese / English)
+└── vendor/                       # C++ headers (e.g. nlohmann json)
 ```
 
----
-
-## �️ Security & Privacy
-
-- ❌ Automatically telemetry is prohibited. No data leaves your machine.
-- ❌ Does not read the contents of your screen, active windows, or clipboard.
-- ✅ Does not inject DLLs into foreign processes.
-- ✅ Only utilizes `WH_MOUSE_LL` (Windows standard low-level mouse hook) specifically to read positioning and capture events.
-- ✅ Will automatically attempt to suspend itself if a fullscreen app or defined game process is in the foreground.
-
-> **Note:** Because the application utilizes `WH_MOUSE_LL` to read the global cursor position (to determine if you are inside a hover zone), security software may sometimes flag it generically. The source code is entirely open and available in `src/`.
+Build artifacts: **`build/`** (CMake) and **`target/`** (Rust) are ignored by Git — generate locally.
 
 ---
 
-## 🤝 Support the Project
+## Security & privacy
 
-ScrollNice is entirely **free and open source**. If it helps to improve your workflow, consider buying me a coffee!
-
-- ☕ **Ko-fi:** [ko-fi.com/hoang2k2](https://ko-fi.com/hoang2k2)
-- 💳 **PayPal:** [paypal.me/bahoang2k2](https://paypal.me/bahoang2k2)
-
----
-
-## � License
-
-Distributed under the MIT License — see the [LICENSE](LICENSE) file for details.
+- **No telemetry** — data stays on your machine.
+- **No** screen scraping, clipboard harvesting, or foreign-process DLL injection.
+- Uses the standard Windows **`WH_MOUSE_LL`** hook for pointer events needed by the scroll zone. Some AV tools may flag low-level hooks generically; the code here is open for review.
 
 ---
 
-## 👨‍💻 Author
+## Support the project
 
-**HoàngX** ([@anhhackta](https://github.com/anhhackta))  
-Website: [anhhackta.github.io/ScrollNice](https://anhhackta.github.io/ScrollNice/)
+ScrollNice is **free and open source**. If it helps your workflow:
+
+- ☕ [Ko-fi — hoang2k2](https://ko-fi.com/hoang2k2)
+- 💳 [PayPal — bahoang2k2](https://paypal.me/bahoang2k2)
 
 ---
 
-*Made with ❤️ in Vietnam 🇻🇳*
+## License
+
+[MIT License](LICENSE)
+
+---
+
+## Author
+
+**HoàngX** · [@anhhackta](https://github.com/anhhackta) · [Project site](https://anhhackta.github.io/ScrollNice/)
+
+*Made with care in Vietnam 🇻🇳*

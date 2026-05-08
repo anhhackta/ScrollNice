@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bắt đầu nhanh — ScrollNice Docs</title>
-    <link rel="icon" type="image/png" href="../assets/img/scrollnice.png">
+    <link rel="icon" href="../assets/img/scrollnice.png" type="image/png">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="../css/style.css">
     <script>
       (function(){
@@ -19,12 +20,15 @@
 <body>
     <nav class="nav" id="main-nav">
     <div class="container">
-        <a href="../index.html" class="nav-brand">🖱️ ScrollNice</a>
+        <a href="../index.html" class="nav-brand">
+            <img src="../assets/img/scrollnice.png" alt="" class="nav-brand-logo" width="28" height="28">
+            <span class="nav-brand-text">ScrollNice</span>
+        </a>
         <div class="nav-links">
             <a href="../index.html" data-i18n="nav_home">Trang chủ</a>
             <a href="index.html" style="color:var(--accent)" data-i18n="nav_docs">Hướng dẫn</a>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <div class="nav-toolbar nav-toolbar--end">
             <button class="theme-btn" title="Toggle theme"></button>
             <div class="lang-dropdown">
                 <button class="lang-trigger" aria-haspopup="true">
